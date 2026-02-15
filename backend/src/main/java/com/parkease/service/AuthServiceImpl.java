@@ -1,0 +1,59 @@
+package com.parkease.service;
+
+import com.parkease.controllers.JwtService;
+import com.parkease.dtos.SignupRequestDTO;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.parkease.dtos.AuthResponseDTO;
+import com.parkease.dtos.LoginRequestDTO;
+import com.parkease.models.Role;
+import com.parkease.models.User;
+import com.parkease.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class AuthServiceImpl implements AuthService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+    @Override
+    public AuthResponseDTO signup(SignupRequestDTO request) {
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        User user = new User();
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setRole(Role.USER);
+
+        userRepository.save(user);
+
+        String token = jwtService.generateToken(user);
+
+        return new AuthResponseDTO(token, "User Registered Successfully");
+    }
+
+    @Override
+    public AuthResponseDTO login(LoginRequestDTO request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid Credentials");
+        }
+
+        String token = jwtService.generateToken(user);
+
+        return new AuthResponseDTO(token, "Login Successful");
+    }
+}
