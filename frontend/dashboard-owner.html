@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Owner Dashboard - ParkEase</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="js/dashboard.js"></script>
+
+</head>
+<body>
+
+<div class="dashboard">
+
+    <aside class="sidebar">
+        <h2>ParkEase</h2>
+        <ul>
+            <li class="active" onclick="showSection('dashboard')">Dashboard</li>
+            <li onclick="showSection('add')">Add Slot</li>
+            <li onclick="showSection('slots')">Manage Slots</li>
+            <li onclick="showSection('bookings')">Bookings</li>
+            <li onclick="logout()">Logout</li>
+        </ul>
+    </aside>
+
+    <main class="main">
+
+        <header class="header">
+            <h1>Owner Dashboard</h1>
+            <div class="profile">Owner</div>
+        </header>
+        <section id="dashboard" class="panel">
+
+    <h2>Welcome, Owner 👋</h2>
+
+    <!-- Stats -->
+    <div class="owner-stats">
+        <div class="owner-card">
+            <h3>Total Slots</h3>
+            <p id="ownerTotal">0</p>
+        </div>
+
+        <div class="owner-card">
+            <h3>Available Slots</h3>
+            <p id="ownerAvailable">0</p>
+        </div>
+
+        <div class="owner-card">
+            <h3>Occupied Slots</h3>
+            <p id="ownerOccupied">0</p>
+        </div>
+
+        <div class="owner-card">
+            <h3>Total Bookings</h3>
+            <p id="ownerBookings">0</p>
+        </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    <h3 style="margin-top:30px;">Recent Bookings</h3>
+
+    <table class="recent-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Slot</th>
+                <th>Type</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="ownerRecentList"></tbody>
+    </table>
+
+</section>
+
+
+        <!-- <section class="panel">
+            <h2>Add Parking Slot</h2> -->
+            <section id="add" class="panel">
+
+            <form class="form">
+                <input type="text" placeholder="Slot Number">
+                <input id="slotNumber" type="text" placeholder="Slot Number">
+
+                <select id="slotType">
+                <option>Car</option>
+                <option>Bike</option>
+                </select>
+                <input id="slotPrice" type="number" placeholder="Price per hour">
+
+                <select>
+                    <option>Available</option>
+                    <option>Occupied</option>
+                </select>
+                <!-- <button type="button">Add Slot</button> -->
+                 <button type="button" onclick="addSlot()">Add Slot</button>
+
+            </form>
+        </section>
+<!-- 
+        <section class="panel">
+            <h2>Parking Slots</h2> -->
+            <section id="slots" class="panel">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Slot No</th>
+                        <th>Type</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>A1</td>
+                        <td>Car</td>
+                        <td>₹50</td>
+                        <td class="available">Available</td>
+                        <td><button>Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td>A2</td>
+                        <td>Bike</td>
+                        <td>₹20</td>
+                        <td class="occupied">Occupied</td>
+                        <td><button>Edit</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+    <section id="bookings" class="panel">
+
+    <div class="section-header">
+        <h2>Parking Bookings</h2>
+        <span class="badge">Owner Panel</span>
+    </div>
+
+    <!-- Booking Summary -->
+    <div class="booking-stats">
+        <div class="booking-card">
+            <h4>Total Bookings</h4>
+            <p id="ownerBookingCount">0</p>
+        </div>
+
+        <div class="booking-card">
+            <h4>Active</h4>
+            <p id="ownerActiveCount">0</p>
+        </div>
+
+        <div class="booking-card">
+            <h4>Completed</h4>
+            <p id="ownerCompletedCount">0</p>
+        </div>
+    </div>
+
+    <!-- Booking Table -->
+    <div class="table-container">
+        <tbody id="ownerBookingList"></tbody>
+
+    </div>
+
+</section>
+
+    </main>
+
+</div>
+
+<script src="js/dashboard.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    showSection('dashboard');
+    renderOwnerBookings();
+});
+</script>
+
+</body>
+</html>

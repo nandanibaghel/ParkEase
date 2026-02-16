@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Dashboard - ParkEase</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="js/dashboard.js"></script>
+</head>
+<body>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h2>ParkEase</h2>
+        <ul>
+            <li class="active" onclick="showSection('dashboard')">Dashboard</li>
+            <li onclick="showSection('slots')">Available Slots</li>
+            <li onclick="showSection('book')">Book Slot</li>
+            <li onclick="showSection('mybookings')">My Bookings</li>
+            <li onclick="logout()">Logout</li>
+        </ul>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+        <!-- Header -->
+        <header class="header">
+            <h1>User Dashboard</h1>
+            <div class="profile">User</div>
+        </header>
+
+        <!-- Dashboard Section -->
+      
+    <section id="dashboard" class="panel">
+
+    <h2>Welcome back, User 👋</h2>
+
+    <!-- Stats Cards -->
+    <div class="cards">
+        <div class="card">
+            <h3>Available Slots</h3>
+            <p id="userAvailable">0</p>
+        </div>
+        <div class="card">
+            <h3>My Bookings</h3>
+            <p id="userBookings">0</p>
+        </div>
+        <div class="card">
+            <h3>Active Slot</h3>
+            <p id="userActive">0</p>
+        </div>
+        <div class="card">
+            <h3>Total Spent</h3>
+            <p id="userSpent">₹0</p>
+        </div>
+    </div>
+   
+    <!-- Recent Activity -->
+    <h3 style="margin-top:30px;">Recent Bookings</h3>
+    <table class="recent-table">
+        <thead>
+            <tr>
+                <th>Slot</th>
+                <th>Type</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="recentBookingList"></tbody>
+    </table>
+
+</section>
+
+        <!-- Available Slots -->
+        <section id="slots" class="panel">
+            <h2>Available Parking Slots</h2>
+            <table>
+    <thead>
+        <tr>
+            <th>Location</th>
+            <th>Slot</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="slotList"></tbody>
+</table>
+
+        </section>
+
+        <!-- Booking Form -->
+        <section id="book" class="panel">
+            <h2>Book Parking Slot</h2>
+
+            <form class="form">
+                <input type="text" placeholder="Slot Number">
+                <input type="date">
+                <input type="time">
+                <input type="text" placeholder="Vehicle Number">
+                <button type="button" onclick="bookSlot()">Confirm Booking</button>
+            </form>
+        </section>
+<!-- 
+        <!- My Bookings -->
+
+        <section id="mybookings" class="panel">
+    <h2>My Bookings</h2>
+
+    <table>
+    <thead>
+    <tr>
+        <th>Slot</th>
+        <th>Type</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+</thead>
+
+        <tbody id="bookingList"></tbody>
+    </table>
+</section>
+</main>
+
+</div>
+
+<!-- Default visible section -->
+<script>
+showSection('dashboard');
+
+// window.addEventListener("load", function(){
+//     renderSlots();
+// });
+window.addEventListener("load", function(){
+    renderSlots();
+    renderBookings();
+     renderUserDashboard();
+});
+
+</script>
+
+</body>
+</html>
