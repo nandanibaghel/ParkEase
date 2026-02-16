@@ -6,8 +6,8 @@ User Services :
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        fullName: "Nandani",
-        email: "nandani@gmail.com",
+        fullName: "name",
+        email: "email@gmail.com",
         password: "password123",
         phoneNumber: "9876543210"
       })
@@ -24,7 +24,7 @@ User Services :
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        email: "nandani@gmail.com",
+        email: "email@gmail.com",
         password: "password123"
       })
     })
@@ -32,4 +32,5 @@ User Services :
     .then(data => {
       localStorage.setItem("token", data.token);
     });
+
 
