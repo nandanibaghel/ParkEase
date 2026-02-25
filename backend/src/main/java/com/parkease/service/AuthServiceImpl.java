@@ -1,7 +1,8 @@
 package com.parkease.service;
 
-import com.parkease.controllers.JwtService;
 import com.parkease.dtos.SignupRequestDTO;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +17,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+	@Autowired
+    private  UserRepository userRepository;
+	@Autowired
+    private  PasswordEncoder passwordEncoder;
+	@Autowired
+    private  JwtService jwtService;
 
     @Override
     public AuthResponseDTO signup(SignupRequestDTO request) {
@@ -33,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setRole(Role.USER);
+        user.setRole(Role.valueOf(request.getRole()));
 
         userRepository.save(user);
 

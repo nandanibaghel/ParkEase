@@ -1,0 +1,54 @@
+package com.parkease.controllers;
+import java.util.List;
+
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.parkease.dtos.ParkingSlotRequestDTO;
+import com.parkease.models.ParkingSlot;
+import com.parkease.service.OwnerSlotService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/owners/slots")
+@RequiredArgsConstructor
+public class OwnerSlotController {
+
+    private final OwnerSlotService ownerSlotService;
+
+    @PostMapping("/add")
+    public ResponseEntity<ParkingSlot> addSlot(
+            @RequestBody ParkingSlotRequestDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(
+                ownerSlotService.addSlot(request)
+        );
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ParkingSlot>> getOwnerSlots(
+            Authentication authentication) {
+
+        return ResponseEntity.ok(
+                ownerSlotService.getOwnerSlots()
+        );
+    }
+
+    @PutMapping("/{slotId}")
+    public ResponseEntity<ParkingSlot> updateSlot(
+            @PathVariable Long slotId,
+            @RequestBody ParkingSlot slot) {
+
+        return ResponseEntity.ok(
+                ownerSlotService.updateSlot(slotId, slot)
+        );
+    }
+}

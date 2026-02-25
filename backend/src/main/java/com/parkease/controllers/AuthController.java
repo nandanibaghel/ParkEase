@@ -1,29 +1,25 @@
 package com.parkease.controllers;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.parkease.dtos.AuthResponseDTO;
 import com.parkease.dtos.LoginRequestDTO;
 import com.parkease.dtos.SignupRequestDTO;
 import com.parkease.service.AuthService;
-
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
-    private final AuthService authService;
+	@Autowired
+    private  AuthService authService;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponseDTO> signup(
-            @RequestBody
-            SignupRequestDTO request) {
+            @RequestBody SignupRequestDTO request) {
         return ResponseEntity.ok(authService.signup(request));
     }
 
@@ -33,4 +29,3 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 }
-
