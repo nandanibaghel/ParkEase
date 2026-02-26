@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParkEase – Smart Parking Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #00d4aa;
+    --accent2: #0099ff;
+    --warn: #ff6b35;
+    --gold: #f5c842;
+    --text: #e8edf5;
+    --muted: #7a8ba0;
+    --border: rgba(255,255,255,0.07);
+    --glow: 0 0 40px rgba(0,212,170,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── PAGES ─── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: block; }
+
+  /* ─── LANDING ─── */
+  #landing { position: relative; overflow: hidden; }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .orb {
+    position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.18; pointer-events: none; z-index: 0;
+    animation: orbFloat 8s ease-in-out infinite;
+  }
+  .orb1 { width: 500px; height: 500px; background: var(--accent); top: -100px; left: -100px; }
+  .orb2 { width: 400px; height: 400px; background: var(--accent2); bottom: -80px; right: -80px; animation-delay: -4s; }
+  .orb3 { width: 300px; height: 300px; background: var(--warn); top: 40%; left: 60%; animation-delay: -2s; opacity: 0.1; }
+
+  @keyframes orbFloat {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 60px;
+    background: rgba(10,14,26,0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+  .logo span { opacity: 0.6; font-weight: 400; }
+  .nav-links { display: flex; gap: 36px; align-items: center; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+    transition: color 0.2s; cursor: pointer;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--accent); color: #000 !important; padding: 10px 24px;
+    border-radius: 8px; font-weight: 600 !important; transition: all 0.2s !important;
+  }
+  .nav-cta:hover { background: #00f0c0 !important; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,170,0.3); }
+
+  /* HERO */
+  .hero {
+    position: relative; z-index: 1;
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 120px 40px 80px;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.25);
+    color: var(--accent); padding: 8px 18px; border-radius: 100px;
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .badge-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 7vw, 6rem); font-weight: 800; line-height: 1.05;
+    letter-spacing: -2px; margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero h1 .line2 {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    max-width: 560px; font-size: 1.1rem; color: var(--muted); line-height: 1.7;
+    margin-bottom: 48px; animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  /* LOGIN CARDS */
+  .login-cards {
+    display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  .login-card {
+    position: relative; overflow: hidden;
+    width: 200px; padding: 28px 24px 24px;
+    border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    text-align: left;
+  }
+  .login-card::before {
+    content: ''; position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .login-card:hover { transform: translateY(-6px); }
+  .login-card:hover::before { opacity: 1; }
+
+  .card-user { background: linear-gradient(145deg, #111827, #0d1a2a); }
+  .card-user:hover { border-color: rgba(0,212,170,0.5); box-shadow: 0 20px 60px rgba(0,212,170,0.15); }
+  .card-user::before { background: radial-gradient(circle at 50% 0%, rgba(0,212,170,0.12), transparent 70%); }
+
+  .card-owner { background: linear-gradient(145deg, #111827, #1a1520); }
+  .card-owner:hover { border-color: rgba(0,153,255,0.5); box-shadow: 0 20px 60px rgba(0,153,255,0.15); }
+  .card-owner::before { background: radial-gradient(circle at 50% 0%, rgba(0,153,255,0.12), transparent 70%); }
+
+  .card-admin { background: linear-gradient(145deg, #111827, #1a1a12); }
+  .card-admin:hover { border-color: rgba(245,200,66,0.5); box-shadow: 0 20px 60px rgba(245,200,66,0.15); }
+  .card-admin::before { background: radial-gradient(circle at 50% 0%, rgba(245,200,66,0.12), transparent 70%); }
+
+  .card-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; margin-bottom: 16px;
+  }
+  .card-user .card-icon { background: rgba(0,212,170,0.15); }
+  .card-owner .card-icon { background: rgba(0,153,255,0.15); }
+  .card-admin .card-icon { background: rgba(245,200,66,0.15); }
+
+  .card-label {
+    font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .card-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-bottom: 18px; }
+  .card-btn {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.8rem; font-weight: 600; padding: 8px 0;
+    border-top: 1px solid var(--border);
+  }
+  .card-user .card-btn { color: var(--accent); }
+  .card-owner .card-btn { color: var(--accent2); }
+  .card-admin .card-btn { color: var(--gold); }
+
+  /* FEATURES */
+  .features {
+    position: relative; z-index: 1;
+    padding: 100px 60px; max-width: 1200px; margin: 0 auto;
+  }
+  .section-tag {
+    display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif; font-size: 2.6rem; font-weight: 800;
+    letter-spacing: -1px; margin-bottom: 60px; max-width: 500px;
+  }
+  .feat-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;
+  }
+  .feat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 32px;
+    transition: all 0.3s;
+  }
+  .feat-card:hover { border-color: rgba(0,212,170,0.25); transform: translateY(-4px); }
+  .feat-icon { font-size: 1.8rem; margin-bottom: 18px; }
+  .feat-card h3 { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
+  .feat-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+  /* STATS */
+  .stats {
+    position: relative; z-index: 1;
+    margin: 0 60px 80px; padding: 48px 60px;
+    background: linear-gradient(135deg, rgba(0,212,170,0.08), rgba(0,153,255,0.08));
+    border: 1px solid rgba(0,212,170,0.2); border-radius: 28px;
+    display: flex; justify-content: space-around; flex-wrap: wrap; gap: 32px;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif; font-size: 2.8rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
+  /* FOOTER */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border); padding: 32px 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    color: var(--muted); font-size: 0.85rem;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── AUTH PAGES ─── */
+  .auth-page {
+    min-height: 100vh; display: flex; align-items: stretch;
+  }
+  .auth-left {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 60px 40px; position: relative; overflow: hidden;
+  }
+  .auth-left::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,212,170,0.12), rgba(0,153,255,0.08));
+  }
+  .auth-illus { position: relative; z-index: 1; text-align: center; }
+  .auth-illus .big-icon { font-size: 6rem; display: block; margin-bottom: 24px; }
+  .auth-illus h2 {
+    font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800;
+    margin-bottom: 12px; letter-spacing: -0.5px;
+  }
+  .auth-illus p { color: var(--muted); max-width: 320px; line-height: 1.6; font-size: 0.9rem; }
+
+  .auth-right {
+    width: 460px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 60px 48px;
+    background: var(--surface); border-left: 1px solid var(--border);
+  }
+  .auth-form-wrap { width: 100%; max-width: 360px; }
+
+  .auth-back {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 0.85rem; cursor: pointer;
+    margin-bottom: 36px; transition: color 0.2s;
+    background: none; border: none;
+  }
+  .auth-back:hover { color: var(--text); }
+
+  .auth-role-badge {
+    display: inline-block; padding: 4px 14px; border-radius: 100px;
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;
+    margin-bottom: 20px; text-transform: uppercase;
+  }
+  .badge-user { background: rgba(0,212,170,0.15); color: var(--accent); }
+  .badge-owner { background: rgba(0,153,255,0.15); color: var(--accent2); }
+  .badge-admin { background: rgba(245,200,66,0.15); color: var(--gold); }
+
+  .auth-title {
+    font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800;
+    margin-bottom: 6px; letter-spacing: -0.5px;
+  }
+  .auth-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 32px; }
+
+  /* TABS */
+  .auth-tabs {
+    display: flex; background: var(--bg); border-radius: 12px; padding: 4px;
+    margin-bottom: 28px;
+  }
+  .auth-tab {
+    flex: 1; padding: 10px; text-align: center;
+    border-radius: 8px; cursor: pointer;
+    font-size: 0.88rem; font-weight: 600;
+    color: var(--muted); transition: all 0.2s;
+    border: none; background: none;
+  }
+  .auth-tab.active {
+    background: var(--surface2); color: var(--text);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* FORM FIELDS */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.3px; }
+  .field input, .field select {
+    width: 100%; padding: 12px 16px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s; outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,170,0.1); }
+  .field input::placeholder { color: var(--muted); }
+
+  .field-row { display: flex; gap: 12px; }
+  .field-row .field { flex: 1; }
+
+  .form-error {
+    background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3);
+    color: var(--warn); padding: 10px 14px; border-radius: 8px;
+    font-size: 0.82rem; margin-bottom: 16px; display: none;
+  }
+  .form-error.show { display: block; }
+
+  .submit-btn {
+    width: 100%; padding: 14px;
+    font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700;
+    border: none; border-radius: 12px; cursor: pointer;
+    transition: all 0.2s; margin-top: 8px; letter-spacing: 0.3px;
+  }
+  .btn-user { background: var(--accent); color: #000; }
+  .btn-user:hover { background: #00f0c0; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,212,170,0.35); }
+  .btn-owner { background: var(--accent2); color: #fff; }
+  .btn-owner:hover { background: #33aaff; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,153,255,0.35); }
+  .btn-admin { background: var(--gold); color: #000; }
+  .btn-admin:hover { background: #f8d85a; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,200,66,0.35); }
+
+  .auth-footer-note { text-align: center; margin-top: 20px; font-size: 0.82rem; color: var(--muted); }
+  .auth-footer-note a { color: var(--accent); text-decoration: none; cursor: pointer; font-weight: 600; }
+
+  /* ─── DASHBOARDS ─── */
+  .dashboard { min-height: 100vh; background: var(--bg); }
+  .dash-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .dash-nav .logo { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; }
+  .dash-user-info { display: flex; align-items: center; gap: 14px; }
+  .dash-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 700;
+  }
+  .avatar-user { background: rgba(0,212,170,0.2); color: var(--accent); }
+  .avatar-owner { background: rgba(0,153,255,0.2); color: var(--accent2); }
+  .avatar-admin { background: rgba(245,200,66,0.2); color: var(--gold); }
+  .dash-username { font-weight: 600; font-size: 0.9rem; }
+  .dash-role-pill {
+    font-size: 0.7rem; font-weight: 700; padding: 3px 10px;
+    border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .pill-user { background: rgba(0,212,170,0.15); color: var(--accent); }
+  .pill-owner { background: rgba(0,153,255,0.15); color: var(--accent2); }
+  .pill-admin { background: rgba(245,200,66,0.15); color: var(--gold); }
+
+  .logout-btn {
+    background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.2);
+    color: var(--warn); padding: 8px 18px; border-radius: 8px;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .logout-btn:hover { background: rgba(255,107,53,0.2); }
+
+  .dash-body { padding: 40px; max-width: 1100px; margin: 0 auto; }
+  .dash-welcome { margin-bottom: 36px; }
+  .dash-welcome h1 { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 6px; }
+  .dash-welcome p { color: var(--muted); font-size: 0.9rem; }
+
+  /* STAT ROW */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px 20px;
+  }
+  .stat-card-num {
+    font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 4px;
+  }
+  .stat-card-label { font-size: 0.8rem; color: var(--muted); }
+  .stat-card-icon { font-size: 1.4rem; margin-bottom: 12px; }
+
+  /* SECTION CARD */
+  .section-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 28px; margin-bottom: 24px;
+  }
+  .section-card h2 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; }
+
+  /* SLOTS GRID */
+  .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+  .slot {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px; text-align: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .slot.available { border-color: rgba(0,212,170,0.3); }
+  .slot.available:hover { background: rgba(0,212,170,0.08); transform: scale(1.04); }
+  .slot.booked { opacity: 0.45; cursor: not-allowed; }
+  .slot-num { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; }
+  .slot-price { font-size: 0.75rem; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+  .slot-status { font-size: 0.7rem; color: var(--muted); }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+  }
+  .data-table td { padding: 14px 16px; font-size: 0.87rem; border-bottom: 1px solid var(--border); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ADD SLOT FORM */
+  .add-slot-form {
+    display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end;
+  }
+  .mini-field label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+  .mini-field input, .mini-field select {
+    width: 100%; padding: 10px 14px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 0.85rem;
+    font-family: 'DM Sans', sans-serif; outline: none; transition: all 0.2s;
+  }
+  .mini-field input:focus, .mini-field select:focus { border-color: var(--accent2); }
+
+  .add-btn {
+    padding: 10px 20px; border: none; border-radius: 10px;
+    background: var(--accent2); color: #fff;
+    font-size: 0.85rem; font-weight: 700; cursor: pointer;
+    transition: all 0.2s; font-family: 'Syne', sans-serif; white-space: nowrap;
+  }
+  .add-btn:hover { background: #33aaff; transform: translateY(-2px); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 24px; padding: 36px; width: 90%; max-width: 420px;
+    animation: modalPop 0.3s ease;
+  }
+  @keyframes modalPop { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1); } }
+  .modal h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; }
+  .modal p { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
+  .modal-btns { display: flex; gap: 12px; }
+  .modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Syne', sans-serif; }
+  .modal-cancel { background: var(--surface2); color: var(--muted); }
+  .modal-cancel:hover { color: var(--text); }
+  .modal-confirm { background: var(--accent); color: #000; }
+  .modal-confirm:hover { background: #00f0c0; }
+  .modal-time-pick { margin-bottom: 20px; }
+  .modal-time-pick label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+  .modal-time-pick input, .modal-time-pick select {
+    width: 100%; padding: 10px 14px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-size: 0.88rem; outline: none;
+    font-family: 'DM Sans', sans-serif; margin-bottom: 10px;
+  }
+
+  /* STATUS BADGE */
+  .status-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 100px;
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .s-active { background: rgba(0,212,170,0.15); color: var(--accent); }
+  .s-booked { background: rgba(0,153,255,0.15); color: var(--accent2); }
+  .s-inactive { background: rgba(122,139,160,0.15); color: var(--muted); }
+  .s-user { background: rgba(0,212,170,0.15); color: var(--accent); }
+  .s-owner { background: rgba(0,153,255,0.15); color: var(--accent2); }
+  .s-admin { background: rgba(245,200,66,0.15); color: var(--gold); }
+
+  /* ACTION BTN */
+  .action-btn {
+    padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .action-danger { background: rgba(255,107,53,0.12); color: var(--warn); }
+  .action-danger:hover { background: rgba(255,107,53,0.22); }
+  .action-primary { background: rgba(0,212,170,0.12); color: var(--accent); }
+  .action-primary:hover { background: rgba(0,212,170,0.22); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 32px; right: 32px; z-index: 300;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none; min-width: 240px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { font-size: 1.2rem; }
+  .toast-msg { font-size: 0.88rem; font-weight: 500; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    .features, .stats { margin: 0 24px; padding: 60px 24px; }
+    footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+    .auth-left { display: none; }
+    .auth-right { width: 100%; padding: 40px 28px; }
+    .dash-body { padding: 24px 20px; }
+    .add-slot-form { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- GLOBAL DECORATIONS -->
+<div class="grid-bg"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  LANDING PAGE                               -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="landing" class="page active">
+  <nav>
+    <div class="logo">Park<span>Ease</span></div>
+    <div class="nav-links">
+      <a onclick="scrollTo(0,0)">Home</a>
+      <a onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+      <a onclick="document.getElementById('stats-section').scrollIntoView({behavior:'smooth'})">Stats</a>
+      <a class="nav-cta" onclick="showAuth('user')">Get Started</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge"><div class="badge-dot"></div> Smart Parking Solution</div>
+    <h1>Find Your Perfect<br><span class="line2">Parking Spot</span></h1>
+    <p>ParkEase connects drivers with available parking spaces in real-time. Book slots instantly, save time, and never circle the block again.</p>
+
+    <div class="login-cards">
+      <div class="login-card card-user" onclick="showAuth('user')">
+        <div class="card-icon">🚗</div>
+        <div class="card-label">User</div>
+        <div class="card-desc">Find & book parking slots near you instantly.</div>
+        <div class="card-btn">Login / Signup <span>→</span></div>
+      </div>
+      <div class="login-card card-owner" onclick="showAuth('owner')">
+        <div class="card-icon">🏢</div>
+        <div class="card-label">Owner</div>
+        <div class="card-desc">List your space and manage bookings easily.</div>
+        <div class="card-btn">Login / Signup <span>→</span></div>
+      </div>
+      <div class="login-card card-admin" onclick="showAuth('admin')">
+        <div class="card-icon">⚙️</div>
+        <div class="card-label">Admin</div>
+        <div class="card-desc">Oversee platform, users, and all activities.</div>
+        <div class="card-btn">Login / Signup <span>→</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="features">
+    <div class="section-tag">Why ParkEase</div>
+    <h2 class="section-title">Everything you need, nothing you don't.</h2>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon">🗺️</div>
+        <h3>Real-Time Availability</h3>
+        <p>View live parking slot status with instant updates. No outdated information, ever.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⚡</div>
+        <h3>Instant Booking</h3>
+        <p>Reserve your spot in seconds. Choose timings, pay securely, and you're set.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">💰</div>
+        <h3>Transparent Pricing</h3>
+        <p>See pricing upfront before you book. No hidden fees, no surprises on checkout.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔒</div>
+        <h3>Secure Authentication</h3>
+        <p>Role-based access control keeps your data safe with hashed credentials and JWT tokens.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <h3>Owner Analytics</h3>
+        <p>Parking owners get a full dashboard to track revenue, occupancy, and manage slots.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🛡️</div>
+        <h3>Admin Control</h3>
+        <p>Admins can monitor all activity, manage users, and keep the platform running smoothly.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="stats-section" class="stats">
+    <div class="stat">
+      <div class="stat-num">12K+</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3,400</div>
+      <div class="stat-label">Parking Slots</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">98%</div>
+      <div class="stat-label">Booking Success Rate</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">420+</div>
+      <div class="stat-label">Partner Locations</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="logo">Park<span>Ease</span></div>
+    <div>© 2025 ParkEase. All rights reserved.</div>
+    <div style="color:var(--muted)">Built with ❤️ for smarter cities</div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  AUTH PAGES                                 -->
+<!-- ═══════════════════════════════════════════ -->
+
+<!-- User Auth -->
+<div id="auth-user" class="page">
+  <div class="auth-page">
+    <div class="auth-left">
+      <div class="auth-illus">
+        <span class="big-icon">🚗</span>
+        <h2 style="background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Book Your Spot</h2>
+        <p>Search, compare, and reserve parking spots in real-time. Your journey starts here.</p>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-form-wrap">
+        <button class="auth-back" onclick="showPage('landing')">← Back to Home</button>
+        <div class="auth-role-badge badge-user">🚗 User Portal</div>
+        <h2 class="auth-title">Welcome to ParkEase</h2>
+        <p class="auth-sub">Sign in or create your account below</p>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchTab('user','login')">Login</button>
+          <button class="auth-tab" onclick="switchTab('user','signup')">Sign Up</button>
+        </div>
+
+        <div id="user-login-form">
+          <div class="form-error" id="user-login-err">Invalid email or password. Please try again.</div>
+          <div class="field"><label>Email Address</label><input type="email" id="u-email" placeholder="you@email.com"></div>
+          <div class="field"><label>Password</label><input type="password" id="u-pass" placeholder="Your password"></div>
+          <button class="submit-btn btn-user" onclick="doLogin('user')">Sign In →</button>
+        </div>
+
+        <div id="user-signup-form" style="display:none">
+          <div class="form-error" id="user-signup-err">Please fill all fields correctly.</div>
+          <div class="field-row">
+            <div class="field"><label>First Name</label><input type="text" id="u-fn" placeholder="John"></div>
+            <div class="field"><label>Last Name</label><input type="text" id="u-ln" placeholder="Doe"></div>
+          </div>
+          <div class="field"><label>Email Address</label><input type="email" id="u-reg-email" placeholder="you@email.com"></div>
+          <div class="field"><label>Phone Number</label><input type="tel" id="u-phone" placeholder="+1 234 567 8900"></div>
+          <div class="field"><label>Password</label><input type="password" id="u-reg-pass" placeholder="Min 8 characters"></div>
+          <button class="submit-btn btn-user" onclick="doSignup('user')">Create Account →</button>
+        </div>
+
+        <div class="auth-footer-note">
+          New to ParkEase? <a onclick="switchTab('user','signup')">Create an account</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Owner Auth -->
+<div id="auth-owner" class="page">
+  <div class="auth-page">
+    <div class="auth-left">
+      <div class="auth-illus">
+        <span class="big-icon">🏢</span>
+        <h2 style="background:linear-gradient(135deg,var(--accent2),#66ccff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Monetize Your Space</h2>
+        <p>List your parking spaces and start earning. Manage bookings, set prices, track revenue.</p>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-form-wrap">
+        <button class="auth-back" onclick="showPage('landing')">← Back to Home</button>
+        <div class="auth-role-badge badge-owner">🏢 Owner Portal</div>
+        <h2 class="auth-title">Owner Access</h2>
+        <p class="auth-sub">Manage your parking properties</p>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchTab('owner','login')">Login</button>
+          <button class="auth-tab" onclick="switchTab('owner','signup')">Register</button>
+        </div>
+
+        <div id="owner-login-form">
+          <div class="form-error" id="owner-login-err">Invalid credentials. Please try again.</div>
+          <div class="field"><label>Email Address</label><input type="email" id="o-email" placeholder="owner@business.com"></div>
+          <div class="field"><label>Password</label><input type="password" id="o-pass" placeholder="Your password"></div>
+          <button class="submit-btn btn-owner" onclick="doLogin('owner')">Sign In →</button>
+        </div>
+
+        <div id="owner-signup-form" style="display:none">
+          <div class="form-error" id="owner-signup-err">Please fill all fields correctly.</div>
+          <div class="field"><label>Business / Full Name</label><input type="text" id="o-name" placeholder="City Park Ltd."></div>
+          <div class="field"><label>Email Address</label><input type="email" id="o-reg-email" placeholder="owner@business.com"></div>
+          <div class="field"><label>Business Address</label><input type="text" id="o-addr" placeholder="123 Main St, City"></div>
+          <div class="field"><label>Password</label><input type="password" id="o-reg-pass" placeholder="Min 8 characters"></div>
+          <button class="submit-btn btn-owner" onclick="doSignup('owner')">Register as Owner →</button>
+        </div>
+
+        <div class="auth-footer-note">
+          Not an owner? <a onclick="showAuth('user')">User login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Auth -->
+<div id="auth-admin" class="page">
+  <div class="auth-page">
+    <div class="auth-left">
+      <div class="auth-illus">
+        <span class="big-icon">⚙️</span>
+        <h2 style="background:linear-gradient(135deg,var(--gold),#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Admin Control</h2>
+        <p>Full platform visibility and control. Manage users, owners, slots, and platform settings.</p>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-form-wrap">
+        <button class="auth-back" onclick="showPage('landing')">← Back to Home</button>
+        <div class="auth-role-badge badge-admin">⚙️ Admin Portal</div>
+        <h2 class="auth-title">Admin Access</h2>
+        <p class="auth-sub">Restricted to authorized personnel only</p>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchTab('admin','login')">Login</button>
+          <button class="auth-tab" onclick="switchTab('admin','signup')">New Admin</button>
+        </div>
+
+        <div id="admin-login-form">
+          <div class="form-error" id="admin-login-err">Invalid admin credentials.</div>
+          <div class="field"><label>Admin Email</label><input type="email" id="a-email" placeholder="admin@parkease.com"></div>
+          <div class="field"><label>Admin Password</label><input type="password" id="a-pass" placeholder="Admin password"></div>
+          <button class="submit-btn btn-admin" onclick="doLogin('admin')">Admin Sign In →</button>
+        </div>
+
+        <div id="admin-signup-form" style="display:none">
+          <div class="form-error" id="admin-signup-err">Please fill all fields correctly.</div>
+          <div class="field"><label>Full Name</label><input type="text" id="a-name" placeholder="Admin Full Name"></div>
+          <div class="field"><label>Admin Email</label><input type="email" id="a-reg-email" placeholder="admin@parkease.com"></div>
+          <div class="field"><label>Secret Key</label><input type="password" id="a-secret" placeholder="Admin secret key"></div>
+          <div class="field"><label>Password</label><input type="password" id="a-reg-pass" placeholder="Min 8 characters"></div>
+          <button class="submit-btn btn-admin" onclick="doSignup('admin')">Create Admin Account →</button>
+        </div>
+
+        <div class="auth-footer-note">
+          <a onclick="showPage('landing')">← Return to landing page</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  USER DASHBOARD                             -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="dashboard-user" class="page dashboard">
+  <nav class="dash-nav">
+    <div class="logo" style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">ParkEase</div>
+    <div class="dash-user-info">
+      <div class="dash-avatar avatar-user" id="u-avatar">U</div>
+      <div>
+        <div class="dash-username" id="u-display-name">User</div>
+        <div class="dash-role-pill pill-user">Driver</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="dash-body">
+    <div class="dash-welcome">
+      <h1>Find Parking 🚗</h1>
+      <p>Select an available slot to book your spot.</p>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-card-icon">🟢</div>
+        <div class="stat-card-num" style="color:var(--accent)" id="u-avail-count">8</div>
+        <div class="stat-card-label">Available Slots</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">📅</div>
+        <div class="stat-card-num" style="color:var(--accent2)" id="u-booked-count">0</div>
+        <div class="stat-card-label">My Bookings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">💵</div>
+        <div class="stat-card-num" style="color:var(--gold)">$3–8</div>
+        <div class="stat-card-label">Price Per Hour</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2>Available Parking Slots</h2>
+      <div class="slots-grid" id="user-slots-grid">
+        <!-- generated by JS -->
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2>My Bookings</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Slot</th><th>Location</th><th>Date</th><th>Time</th><th>Duration</th><th>Cost</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="user-bookings-table">
+          <tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">No bookings yet. Book a slot above!</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  OWNER DASHBOARD                            -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="dashboard-owner" class="page dashboard">
+  <nav class="dash-nav">
+    <div class="logo" style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--accent2),#66ccff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">ParkEase</div>
+    <div class="dash-user-info">
+      <div class="dash-avatar avatar-owner" id="o-avatar">O</div>
+      <div>
+        <div class="dash-username" id="o-display-name">Owner</div>
+        <div class="dash-role-pill pill-owner">Lot Owner</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="dash-body">
+    <div class="dash-welcome">
+      <h1>Owner Dashboard 🏢</h1>
+      <p>Manage your parking spaces and track revenue.</p>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-card-icon">🅿️</div>
+        <div class="stat-card-num" style="color:var(--accent2)" id="o-total-slots">0</div>
+        <div class="stat-card-label">Total Slots</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">✅</div>
+        <div class="stat-card-num" style="color:var(--accent)" id="o-active-slots">0</div>
+        <div class="stat-card-label">Active Slots</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">💰</div>
+        <div class="stat-card-num" style="color:var(--gold)" id="o-revenue">$0</div>
+        <div class="stat-card-label">Total Revenue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">🔖</div>
+        <div class="stat-card-num" style="color:var(--warn)" id="o-bookings">0</div>
+        <div class="stat-card-label">Total Bookings</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2>Add New Parking Slot</h2>
+      <div class="add-slot-form">
+        <div class="mini-field"><label>Slot Name / ID</label><input type="text" id="slot-name" placeholder="e.g. A-101"></div>
+        <div class="mini-field"><label>Location</label><input type="text" id="slot-location" placeholder="e.g. Level 2, Block A"></div>
+        <div class="mini-field"><label>Price ($/hr)</label><input type="number" id="slot-price" placeholder="5" min="1"></div>
+        <div><button class="add-btn" onclick="addSlot()">+ Add Slot</button></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2>My Parking Slots</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>Slot</th><th>Location</th><th>Price/hr</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="owner-slots-table">
+          <tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">No slots added yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-card">
+      <h2>Recent Bookings</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>Booking ID</th><th>Slot</th><th>User</th><th>Date</th><th>Duration</th><th>Revenue</th></tr>
+        </thead>
+        <tbody id="owner-bookings-table">
+          <tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">No bookings yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  ADMIN DASHBOARD                            -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="dashboard-admin" class="page dashboard">
+  <nav class="dash-nav">
+    <div class="logo" style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--gold),#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent">ParkEase</div>
+    <div class="dash-user-info">
+      <div class="dash-avatar avatar-admin" id="a-avatar">A</div>
+      <div>
+        <div class="dash-username" id="a-display-name">Admin</div>
+        <div class="dash-role-pill pill-admin">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="dash-body">
+    <div class="dash-welcome">
+      <h1>Admin Control Center ⚙️</h1>
+      <p>Full platform oversight — users, owners, slots, and system health.</p>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-card-icon">👤</div>
+        <div class="stat-card-num" style="color:var(--accent)" id="adm-users">1</div>
+        <div class="stat-card-label">Registered Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">🏢</div>
+        <div class="stat-card-num" style="color:var(--accent2)" id="adm-owners">1</div>
+        <div class="stat-card-label">Lot Owners</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">🅿️</div>
+        <div class="stat-card-num" style="color:var(--gold)" id="adm-slots">12</div>
+        <div class="stat-card-label">Total Slots</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">📋</div>
+        <div class="stat-card-num" style="color:var(--warn)" id="adm-bookings">0</div>
+        <div class="stat-card-label">Total Bookings</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2>All Users</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="admin-users-table">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-card">
+      <h2>All Parking Slots</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>Slot ID</th><th>Location</th><th>Owner</th><th>Price/hr</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="admin-slots-table">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-card">
+      <h2>All Bookings</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>Booking ID</th><th>User</th><th>Slot</th><th>Date</th><th>Time</th><th>Cost</th></tr>
+        </thead>
+        <tbody id="admin-bookings-table">
+          <tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">No bookings yet across the platform.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  BOOKING MODAL                              -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="booking-modal">
+  <div class="modal">
+    <h3>🅿️ Book Slot <span id="modal-slot-name">A-01</span></h3>
+    <p id="modal-slot-info">Location • $5/hr</p>
+    <div class="modal-time-pick">
+      <label>Date</label>
+      <input type="date" id="book-date">
+      <label>Start Time</label>
+      <input type="time" id="book-start">
+      <label>Duration (hours)</label>
+      <select id="book-dur">
+        <option value="1">1 Hour</option>
+        <option value="2">2 Hours</option>
+        <option value="3">3 Hours</option>
+        <option value="4">4 Hours</option>
+        <option value="6">6 Hours</option>
+        <option value="8">8 Hours</option>
+        <option value="12">12 Hours</option>
+        <option value="24">24 Hours</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px;padding:12px;background:rgba(0,212,170,0.08);border-radius:10px;font-size:0.85rem">
+      Estimated Cost: <strong style="color:var(--accent)" id="modal-cost">$5.00</strong>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmBooking()">Confirm Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toast-icon">✅</div>
+  <div class="toast-msg" id="toast-msg">Action successful!</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  JAVASCRIPT                                 -->
+<!-- ═══════════════════════════════════════════ -->
+<script>
+// ─── STATE ───────────────────────────────────
+const state = {
+  currentUser: null,
+  users: [
+    { id: 1, name: 'Jane Smith', email: 'user@demo.com', role: 'user', joined: '2024-12-01', pass: 'user123' },
+    { id: 2, name: 'City Parking Ltd', email: 'owner@demo.com', role: 'owner', joined: '2025-01-15', pass: 'owner123' },
+    { id: 3, name: 'Super Admin', email: 'admin@parkease.com', role: 'admin', joined: '2024-11-01', pass: 'admin123' }
+  ],
+  slots: [
+    { id: 'A-01', location: 'Level 1, Block A', price: 5, status: 'available', owner: 'City Parking Ltd' },
+    { id: 'A-02', location: 'Level 1, Block A', price: 5, status: 'available', owner: 'City Parking Ltd' },
+    { id: 'A-03', location: 'Level 1, Block A', price: 5, status: 'booked', owner: 'City Parking Ltd' },
+    { id: 'B-01', location: 'Level 2, Block B', price: 7, status: 'available', owner: 'City Parking Ltd' },
+    { id: 'B-02', location: 'Level 2, Block B', price: 7, status: 'available', owner: 'City Parking Ltd' },
+    { id: 'B-03', location: 'Level 2, Block B', price: 7, status: 'booked', owner: 'City Parking Ltd' },
+    { id: 'C-01', location: 'Level 3, Rooftop', price: 8, status: 'available', owner: 'City Parking Ltd' },
+    { id: 'C-02', location: 'Level 3, Rooftop', price: 8, status: 'available', owner: 'City Parking Ltd' },
+    { id: 'D-01', location: 'Ground Floor', price: 3, status: 'available', owner: 'City Parking Ltd' },
+    { id: 'D-02', location: 'Ground Floor', price: 3, status: 'available', owner: 'City Parking Ltd' },
+    { id: 'D-03', location: 'Ground Floor', price: 3, status: 'booked', owner: 'City Parking Ltd' },
+    { id: 'D-04', location: 'Ground Floor', price: 3, status: 'available', owner: 'City Parking Ltd' },
+  ],
+  bookings: [],
+  selectedSlot: null,
+};
+
+// ─── PAGE NAV ─────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function showAuth(role) { showPage(`auth-${role}`); }
+
+// ─── TAB SWITCH ───────────────────────────────
+function switchTab(role, tab) {
+  const tabs = document.querySelectorAll(`#auth-${role} .auth-tab`);
+  tabs.forEach((t, i) => t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab !== 'login')));
+  document.getElementById(`${role}-login-form`).style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById(`${role}-signup-form`).style.display = tab !== 'login' ? 'block' : 'none';
+  const note = document.querySelector(`#auth-${role} .auth-footer-note`);
+  if(note) note.innerHTML = tab === 'login'
+    ? `New to ParkEase? <a onclick="switchTab('${role}','signup')">Create an account</a>`
+    : `Already have an account? <a onclick="switchTab('${role}','login')">Sign in</a>`;
+}
+
+// ─── AUTH ────────────────────────────────────
+function doLogin(role) {
+  const emailEl = document.getElementById(`${role[0]}-email`);
+  const passEl = document.getElementById(`${role[0]}-pass`);
+  const errEl = document.getElementById(`${role}-login-err`);
+  if (!emailEl || !passEl) return;
+  const email = emailEl.value.trim();
+  const pass = passEl.value.trim();
+  errEl.classList.remove('show');
+
+  const found = state.users.find(u => u.email === email && u.pass === pass && u.role === role);
+  if (!found) { errEl.classList.add('show'); return; }
+  loginSuccess(found);
+}
+
+function doSignup(role) {
+  const errEl = document.getElementById(`${role}-signup-err`);
+  errEl.classList.remove('show');
+
+  let name, email, pass;
+  if (role === 'user') {
+    const fn = document.getElementById('u-fn').value.trim();
+    const ln = document.getElementById('u-ln').value.trim();
+    email = document.getElementById('u-reg-email').value.trim();
+    pass = document.getElementById('u-reg-pass').value;
+    name = `${fn} ${ln}`.trim();
+    if (!fn || !email || !pass || pass.length < 8) { errEl.textContent = 'Please fill all fields. Password must be 8+ characters.'; errEl.classList.add('show'); return; }
+  } else if (role === 'owner') {
+    name = document.getElementById('o-name').value.trim();
+    email = document.getElementById('o-reg-email').value.trim();
+    pass = document.getElementById('o-reg-pass').value;
+    if (!name || !email || !pass || pass.length < 8) { errEl.textContent = 'Please fill all fields. Password must be 8+ characters.'; errEl.classList.add('show'); return; }
+  } else {
+    name = document.getElementById('a-name').value.trim();
+    email = document.getElementById('a-reg-email').value.trim();
+    const secret = document.getElementById('a-secret').value.trim();
+    pass = document.getElementById('a-reg-pass').value;
+    if (!name || !email || !pass || pass.length < 8 || secret !== 'PARKEASE2025') {
+      errEl.textContent = 'Invalid secret key or incomplete fields.'; errEl.classList.add('show'); return;
+    }
+  }
+
+  if (state.users.find(u => u.email === email)) {
+    errEl.textContent = 'Email already registered.'; errEl.classList.add('show'); return;
+  }
+  const newUser = { id: Date.now(), name, email, role, joined: new Date().toISOString().split('T')[0], pass };
+  state.users.push(newUser);
+  loginSuccess(newUser);
+  showToast('✅', `Welcome to ParkEase, ${name.split(' ')[0]}!`);
+}
+
+function loginSuccess(user) {
+  state.currentUser = user;
+  if (user.role === 'user') {
+    document.getElementById('u-display-name').textContent = user.name.split(' ')[0];
+    document.getElementById('u-avatar').textContent = user.name[0].toUpperCase();
+    renderUserSlots();
+    renderUserBookings();
+    updateUserStats();
+  } else if (user.role === 'owner') {
+    document.getElementById('o-display-name').textContent = user.name.split(' ')[0];
+    document.getElementById('o-avatar').textContent = user.name[0].toUpperCase();
+    renderOwnerSlots();
+    renderOwnerBookings();
+    updateOwnerStats();
+  } else {
+    document.getElementById('a-display-name').textContent = user.name.split(' ')[0];
+    document.getElementById('a-avatar').textContent = user.name[0].toUpperCase();
+    renderAdminData();
+  }
+  showPage(`dashboard-${user.role}`);
+  showToast('👋', `Welcome back, ${user.name.split(' ')[0]}!`);
+}
+
+function doLogout() {
+  state.currentUser = null;
+  showPage('landing');
+  showToast('👋', 'You have been logged out.');
+}
+
+// ─── USER DASHBOARD ───────────────────────────
+function renderUserSlots() {
+  const grid = document.getElementById('user-slots-grid');
+  grid.innerHTML = state.slots.map(s => `
+    <div class="slot ${s.status}" onclick="${s.status === 'available' ? `openBooking('${s.id}')` : ''}">
+      <div class="slot-num">${s.id}</div>
+      <div class="slot-price">$${s.price}/hr</div>
+      <div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px">${s.location.split(',')[0]}</div>
+      <div class="slot-status">${s.status === 'available' ? '🟢 Available' : '🔴 Booked'}</div>
+    </div>`).join('');
+}
+
+function updateUserStats() {
+  document.getElementById('u-avail-count').textContent = state.slots.filter(s => s.status === 'available').length;
+  const myBookings = state.bookings.filter(b => b.userId === state.currentUser?.id);
+  document.getElementById('u-booked-count').textContent = myBookings.length;
+}
+
+function renderUserBookings() {
+  const tbody = document.getElementById('user-bookings-table');
+  const my = state.bookings.filter(b => b.userId === state.currentUser?.id);
+  if (!my.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">No bookings yet. Book a slot above!</td></tr>';
+    return;
+  }
+  tbody.innerHTML = my.map(b => `
+    <tr>
+      <td><strong>${b.slotId}</strong></td>
+      <td>${b.location}</td>
+      <td>${b.date}</td>
+      <td>${b.time}</td>
+      <td>${b.duration} hr</td>
+      <td style="color:var(--accent);font-weight:600">$${b.cost.toFixed(2)}</td>
+      <td><span class="status-badge s-booked">Confirmed</span></td>
+    </tr>`).join('');
+}
+
+// ─── BOOKING MODAL ────────────────────────────
+function openBooking(slotId) {
+  const slot = state.slots.find(s => s.id === slotId);
+  if (!slot || slot.status !== 'available') return;
+  state.selectedSlot = slot;
+  document.getElementById('modal-slot-name').textContent = slot.id;
+  document.getElementById('modal-slot-info').textContent = `${slot.location} • $${slot.price}/hr`;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('book-date').value = today;
+  document.getElementById('book-date').min = today;
+  document.getElementById('book-start').value = '09:00';
+  updateCost();
+  document.getElementById('booking-modal').classList.add('open');
+}
+
+function updateCost() {
+  if (!state.selectedSlot) return;
+  const dur = parseInt(document.getElementById('book-dur').value);
+  const cost = dur * state.selectedSlot.price;
+  document.getElementById('modal-cost').textContent = `$${cost.toFixed(2)}`;
+}
+document.getElementById('book-dur').addEventListener('change', updateCost);
+
+function closeModal() { document.getElementById('booking-modal').classList.remove('open'); }
+
+function confirmBooking() {
+  const slot = state.selectedSlot;
+  if (!slot) return;
+  const date = document.getElementById('book-date').value;
+  const time = document.getElementById('book-start').value;
+  const dur = parseInt(document.getElementById('book-dur').value);
+  if (!date || !time) { showToast('❌', 'Please select date and time.'); return; }
+
+  const booking = {
+    id: `BK-${Date.now()}`,
+    userId: state.currentUser.id,
+    userName: state.currentUser.name,
+    slotId: slot.id,
+    location: slot.location,
+    date, time, duration: dur,
+    cost: dur * slot.price,
+    owner: slot.owner,
+  };
+  state.bookings.push(booking);
+  slot.status = 'booked';
+
+  closeModal();
+  renderUserSlots();
+  renderUserBookings();
+  updateUserStats();
+  updateAdminStats();
+  renderOwnerBookings();
+  updateOwnerStats();
+  showToast('✅', `Slot ${slot.id} booked successfully!`);
+}
+
+// ─── OWNER DASHBOARD ──────────────────────────
+function addSlot() {
+  const name = document.getElementById('slot-name').value.trim();
+  const loc = document.getElementById('slot-location').value.trim();
+  const price = parseFloat(document.getElementById('slot-price').value);
+  if (!name || !loc || !price || price < 1) { showToast('❌', 'Please fill all slot fields.'); return; }
+  if (state.slots.find(s => s.id === name)) { showToast('❌', 'Slot ID already exists.'); return; }
+  state.slots.push({ id: name, location: loc, price, status: 'available', owner: state.currentUser.name });
+  document.getElementById('slot-name').value = '';
+  document.getElementById('slot-location').value = '';
+  document.getElementById('slot-price').value = '';
+  renderOwnerSlots();
+  updateOwnerStats();
+  updateAdminStats();
+  showToast('✅', `Slot ${name} added successfully!`);
+}
+
+function renderOwnerSlots() {
+  const tbody = document.getElementById('owner-slots-table');
+  const mySlots = state.slots.filter(s => s.owner === state.currentUser?.name);
+  if (!mySlots.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">No slots added yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = mySlots.map(s => `
+    <tr>
+      <td><strong>${s.id}</strong></td>
+      <td>${s.location}</td>
+      <td style="color:var(--gold)">$${s.price}/hr</td>
+      <td><span class="status-badge ${s.status === 'available' ? 's-active' : 's-booked'}">${s.status}</span></td>
+      <td>
+        <button class="action-btn action-danger" onclick="removeSlot('${s.id}')">Remove</button>
+      </td>
+    </tr>`).join('');
+}
+
+function removeSlot(slotId) {
+  const idx = state.slots.findIndex(s => s.id === slotId);
+  if (idx !== -1 && state.slots[idx].status !== 'booked') {
+    state.slots.splice(idx, 1);
+    renderOwnerSlots();
+    updateOwnerStats();
+    updateAdminStats();
+    showToast('🗑️', `Slot ${slotId} removed.`);
+  } else {
+    showToast('❌', 'Cannot remove a booked slot.');
+  }
+}
+
+function renderOwnerBookings() {
+  const tbody = document.getElementById('owner-bookings-table');
+  const myBookings = state.bookings.filter(b => b.owner === state.currentUser?.name);
+  if (!myBookings.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">No bookings yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = myBookings.map(b => `
+    <tr>
+      <td style="color:var(--muted);font-size:0.78rem">${b.id}</td>
+      <td><strong>${b.slotId}</strong></td>
+      <td>${b.userName}</td>
+      <td>${b.date}</td>
+      <td>${b.duration} hr</td>
+      <td style="color:var(--gold);font-weight:700">$${b.cost.toFixed(2)}</td>
+    </tr>`).join('');
+}
+
+function updateOwnerStats() {
+  if (!state.currentUser || state.currentUser.role !== 'owner') return;
+  const mySlots = state.slots.filter(s => s.owner === state.currentUser.name);
+  const myBookings = state.bookings.filter(b => b.owner === state.currentUser.name);
+  document.getElementById('o-total-slots').textContent = mySlots.length;
+  document.getElementById('o-active-slots').textContent = mySlots.filter(s => s.status === 'available').length;
+  document.getElementById('o-revenue').textContent = '$' + myBookings.reduce((a, b) => a + b.cost, 0).toFixed(0);
+  document.getElementById('o-bookings').textContent = myBookings.length;
+}
+
+// ─── ADMIN DASHBOARD ──────────────────────────
+function renderAdminData() {
+  // Users table
+  const utbody = document.getElementById('admin-users-table');
+  utbody.innerHTML = state.users.map((u, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td><strong>${u.name}</strong></td>
+      <td style="color:var(--muted)">${u.email}</td>
+      <td><span class="status-badge s-${u.role}">${u.role}</span></td>
+      <td style="color:var(--muted)">${u.joined}</td>
+      <td>
+        ${u.role !== 'admin' ? `<button class="action-btn action-danger" onclick="adminRemoveUser(${u.id})">Remove</button>` : '<span style="color:var(--muted);font-size:0.75rem">Protected</span>'}
+      </td>
+    </tr>`).join('');
+
+  // Slots table
+  const stbody = document.getElementById('admin-slots-table');
+  stbody.innerHTML = state.slots.map(s => `
+    <tr>
+      <td><strong>${s.id}</strong></td>
+      <td>${s.location}</td>
+      <td style="color:var(--muted)">${s.owner}</td>
+      <td style="color:var(--gold)">$${s.price}/hr</td>
+      <td><span class="status-badge ${s.status === 'available' ? 's-active' : 's-booked'}">${s.status}</span></td>
+      <td>
+        <button class="action-btn action-primary" onclick="adminToggleSlot('${s.id}')">
+          ${s.status === 'available' ? 'Deactivate' : 'Activate'}
+        </button>
+      </td>
+    </tr>`).join('');
+
+  // Bookings table
+  const btbody = document.getElementById('admin-bookings-table');
+  if (!state.bookings.length) {
+    btbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">No bookings yet across the platform.</td></tr>';
+  } else {
+    btbody.innerHTML = state.bookings.map(b => `
+      <tr>
+        <td style="color:var(--muted);font-size:0.78rem">${b.id}</td>
+        <td>${b.userName}</td>
+        <td><strong>${b.slotId}</strong></td>
+        <td>${b.date}</td>
+        <td>${b.time} (${b.duration}hr)</td>
+        <td style="color:var(--accent);font-weight:700">$${b.cost.toFixed(2)}</td>
+      </tr>`).join('');
+  }
+
+  updateAdminStats();
+}
+
+function updateAdminStats() {
+  document.getElementById('adm-users').textContent = state.users.filter(u => u.role === 'user').length;
+  document.getElementById('adm-owners').textContent = state.users.filter(u => u.role === 'owner').length;
+  document.getElementById('adm-slots').textContent = state.slots.length;
+  document.getElementById('adm-bookings').textContent = state.bookings.length;
+}
+
+function adminRemoveUser(id) {
+  const idx = state.users.findIndex(u => u.id === id);
+  if (idx !== -1) {
+    const name = state.users[idx].name;
+    state.users.splice(idx, 1);
+    renderAdminData();
+    showToast('🗑️', `User "${name}" removed.`);
+  }
+}
+
+function adminToggleSlot(slotId) {
+  const slot = state.slots.find(s => s.id === slotId);
+  if (slot) {
+    if (slot.status === 'available') { slot.status = 'inactive'; }
+    else if (slot.status === 'inactive') { slot.status = 'available'; }
+    else { showToast('❌', 'Cannot toggle a currently booked slot.'); return; }
+    renderAdminData();
+    showToast('✅', `Slot ${slotId} status updated.`);
+  }
+}
+
+// ─── TOAST ────────────────────────────────────
+let toastTimer;
+function showToast(icon, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── INIT ─────────────────────────────────────
+// Set min date on booking modal
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('book-date').min = today;
+  document.getElementById('book-date').value = today;
+});
+
+// Close modal on overlay click
+document.getElementById('booking-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
