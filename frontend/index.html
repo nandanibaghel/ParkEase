@@ -886,15 +886,66 @@
       </div>
     </div>
 
-    <div class="section-card">
-      <h2>Add New Parking Slot</h2>
-      <div class="add-slot-form">
-        <div class="mini-field"><label>Slot Name / ID</label><input type="text" id="slot-name" placeholder="e.g. A-101"></div>
-        <div class="mini-field"><label>Location</label><input type="text" id="slot-location" placeholder="e.g. Level 2, Block A"></div>
-        <div class="mini-field"><label>Price ($/hr)</label><input type="number" id="slot-price" placeholder="5" min="1"></div>
-        <div><button class="add-btn" onclick="addSlot()">+ Add Slot</button></div>
-      </div>
+  <!-- ADD PARKING AREA -->
+<div class="section-card">
+  <h2>Add Parking Area</h2>
+  <div class="add-slot-form" style="grid-template-columns:1fr 1fr 1fr 1fr auto">
+    <div class="mini-field">
+      <label>Lot Name</label>
+      <input type="text" id="area-name" placeholder="PVR-New Delhi">
     </div>
+    <div class="mini-field">
+      <label>Address</label>
+      <input type="text" id="area-address" placeholder="Near Red Fort">
+    </div>
+    <div class="mini-field">
+      <label>City</label>
+      <input type="text" id="area-city" placeholder="New Delhi">
+    </div>
+    <div class="mini-field">
+      <label>Pincode</label>
+      <input type="text" id="area-pincode" placeholder="110001">
+    </div>
+    <div>
+      <button class="add-btn" onclick="addArea()">+ Add Area</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SLOT TO AREA -->
+<div class="section-card">
+  <h2>Add Parking Slot</h2>
+  <div class="add-slot-form" style="grid-template-columns:1fr 1fr 1fr 1fr auto">
+    
+    <div class="mini-field">
+      <label>Select Area</label>
+      <select id="slot-area"></select>
+    </div>
+
+    <div class="mini-field">
+      <label>Slot Number</label>
+      <input type="text" id="slot-number" placeholder="A1">
+    </div>
+
+    <div class="mini-field">
+      <label>Vehicle Type</label>
+      <select id="slot-type">
+        <option value="CAR">Car</option>
+        <option value="BIKE">Bike</option>
+      </select>
+    </div>
+
+    <div class="mini-field">
+      <label>Price / Hour</label>
+      <input type="number" id="slot-price" placeholder="50">
+    </div>
+
+    <div>
+      <button class="add-btn" onclick="addSlotToArea()">+ Add Slot</button>
+    </div>
+
+  </div>
+</div>
 
     <div class="section-card">
       <h2>My Parking Slots</h2>
@@ -1054,6 +1105,9 @@ const state = {
     { id: 2, name: 'City Parking Ltd', email: 'owner@demo.com', role: 'owner', joined: '2025-01-15', pass: 'owner123' },
     { id: 3, name: 'Super Admin', email: 'admin@parkease.com', role: 'admin', joined: '2024-11-01', pass: 'admin123' }
   ],
+// ✅ NEW — parking areas (owner adds these)
+  areas: [],
+
   slots: [
     { id: 'A-01', location: 'Level 1, Block A', price: 5, status: 'available', owner: 'City Parking Ltd' },
     { id: 'A-02', location: 'Level 1, Block A', price: 5, status: 'available', owner: 'City Parking Ltd' },
@@ -1071,6 +1125,81 @@ const state = {
   bookings: [],
   selectedSlot: null,
 };
+
+// ───────── OWNER: ADD PARKING AREA ─────────
+function addArea() {
+  const name = document.getElementById("area-name").value.trim();
+  const address = document.getElementById("area-address").value.trim();
+  const city = document.getElementById("area-city").value.trim();
+  const pincode = document.getElementById("area-pincode").value.trim();
+
+  if (!name || !address || !city || !pincode) {
+    alert("Fill all fields");
+    return;
+  }
+
+  const newArea = {
+    id: Date.now(),
+    lot_name: name,
+    address,
+    city,
+    pincode
+  };
+
+  state.areas.push(newArea);
+  updateAreaDropdown();
+
+  document.getElementById("area-name").value = "";
+  document.getElementById("area-address").value = "";
+  document.getElementById("area-city").value = "";
+  document.getElementById("area-pincode").value = "";
+}
+
+// ───────── OWNER: UPDATE DROPDOWN ─────────
+function updateAreaDropdown() {
+  const select = document.getElementById("slot-area");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  state.areas.forEach(a => {
+    const opt = document.createElement("option");
+    opt.value = a.id;
+    opt.textContent = a.lot_name + " (" + a.city + ")";
+    select.appendChild(opt);
+  });
+}
+
+// ───────── OWNER: ADD SLOT TO AREA ─────────
+function addSlotToArea() {
+  const areaId = document.getElementById("slot-area").value;
+  const number = document.getElementById("slot-number").value.trim();
+  const type = document.getElementById("slot-type").value;
+  const price = document.getElementById("slot-price").value;
+
+  if (!areaId || !number || !price) {
+    alert("Fill slot details");
+    return;
+  }
+
+  const area = state.areas.find(a => a.id == areaId);
+
+  const newSlot = {
+    id: number,
+    location: area.lot_name,
+    price: Number(price),
+    status: "available",
+    owner: state.currentUser?.name
+  };
+
+  state.slots.push(newSlot);
+
+  renderOwnerSlots();
+  updateOwnerStats();
+
+  document.getElementById("slot-number").value = "";
+  document.getElementById("slot-price").value = "";
+}
 
 // ─── PAGE NAV ─────────────────────────────────
 function showPage(id) {
@@ -1262,6 +1391,7 @@ function confirmBooking() {
   updateAdminStats();
   renderOwnerBookings();
   updateOwnerStats();
+  updateAreaDropdown();   // ← ADD THIS LINE
   showToast('✅', `Slot ${slot.id} booked successfully!`);
 }
 
@@ -1340,6 +1470,81 @@ function updateOwnerStats() {
   document.getElementById('o-active-slots').textContent = mySlots.filter(s => s.status === 'available').length;
   document.getElementById('o-revenue').textContent = '$' + myBookings.reduce((a, b) => a + b.cost, 0).toFixed(0);
   document.getElementById('o-bookings').textContent = myBookings.length;
+}
+
+
+
+function addArea() {
+  const name = document.getElementById("area-name").value.trim();
+  const address = document.getElementById("area-address").value.trim();
+  const city = document.getElementById("area-city").value.trim();
+  const pincode = document.getElementById("area-pincode").value.trim();
+
+  if (!name || !address || !city || !pincode) {
+    alert("Fill all fields");
+    return;
+  }
+
+  const newArea = {
+    id: Date.now(),
+    lot_name: name,
+    address,
+    city,
+    pincode
+  };
+
+  state.areas.push(newArea);
+
+  updateAreaDropdown();
+
+  document.getElementById("area-name").value = "";
+  document.getElementById("area-address").value = "";
+  document.getElementById("area-city").value = "";
+  document.getElementById("area-pincode").value = "";
+}
+
+function updateAreaDropdown() {
+  const select = document.getElementById("slot-area");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  state.areas.forEach(a => {
+    const opt = document.createElement("option");
+    opt.value = a.id;
+    opt.textContent = a.lot_name + " (" + a.city + ")";
+    select.appendChild(opt);
+  });
+}
+
+function addSlotToArea() {
+  const areaId = document.getElementById("slot-area").value;
+  const number = document.getElementById("slot-number").value.trim();
+  const type = document.getElementById("slot-type").value;
+  const price = document.getElementById("slot-price").value;
+
+  if (!areaId || !number || !price) {
+    alert("Fill slot details");
+    return;
+  }
+
+  const area = state.areas.find(a => a.id == areaId);
+
+  const newSlot = {
+    id: number,
+    location: area.lot_name,
+    price: Number(price),
+    status: "available",
+    owner: state.currentUser?.name
+  };
+
+  state.slots.push(newSlot);
+
+  renderOwnerSlots();
+  updateOwnerStats();
+
+  document.getElementById("slot-number").value = "";
+  document.getElementById("slot-price").value = "";
 }
 
 // ─── ADMIN DASHBOARD ──────────────────────────
