@@ -1,10 +1,11 @@
 package com.parkease.service;
 
 import com.parkease.dtos.SignupRequestDTO;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.parkease.dtos.AuthResponseDTO;
 import com.parkease.dtos.LoginRequestDTO;
@@ -17,18 +18,19 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-	@Autowired
-    private  UserRepository userRepository;
-	@Autowired
-    private  PasswordEncoder passwordEncoder;
-	@Autowired
-    private  JwtService jwtService;
+
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtService jwtService;
 
     @Override
     public AuthResponseDTO signup(SignupRequestDTO request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already registered");
         }
 
         User user = new User();
@@ -49,10 +51,10 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponseDTO login(LoginRequestDTO request) {
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid Credentials");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Credentials");
         }
 
         String token = jwtService.generateToken(user);
