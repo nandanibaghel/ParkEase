@@ -24,6 +24,6 @@ public class ParkingSlot {
     private Boolean isAvailable = true;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    @JoinColumn(name = "parking_area_id", nullable = false)
+    private ParkingArea parkingArea;
 }

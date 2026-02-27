@@ -3,6 +3,7 @@ import java.util.List;
 
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,11 +26,12 @@ public class OwnerSlotController {
     private final OwnerSlotService ownerSlotService;
 
     @PostMapping("/add")
-    public ResponseEntity<ParkingSlot> addSlot(
+    public ResponseEntity<String> addSlot(
             @RequestBody ParkingSlotRequestDTO request,
             Authentication authentication) {
+    	ownerSlotService.addSlot(request);
         return ResponseEntity.ok(
-                ownerSlotService.addSlot(request)
+                "slot added "
         );
     }
 
@@ -45,10 +47,20 @@ public class OwnerSlotController {
     @PutMapping("/{slotId}")
     public ResponseEntity<ParkingSlot> updateSlot(
             @PathVariable Long slotId,
-            @RequestBody ParkingSlot slot) {
+            @RequestBody ParkingSlotRequestDTO request) {
 
         return ResponseEntity.ok(
-                ownerSlotService.updateSlot(slotId, slot)
+                ownerSlotService.updateSlot(slotId, request)
         );
     }
+    
+    @DeleteMapping("/{slotId}")
+    public ResponseEntity<Boolean> deleteSlot(
+            @PathVariable Long slotId ) {
+
+        return ResponseEntity.ok(
+                ownerSlotService.deleteSlot(slotId)
+        );
+    }
+    
 }

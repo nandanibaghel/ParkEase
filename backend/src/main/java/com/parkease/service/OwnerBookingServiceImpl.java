@@ -31,6 +31,7 @@ public class OwnerBookingServiceImpl implements OwnerBookingService {
         User owner = userRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Owner not found"));
 
-        return bookingRepo.findByParkingSlotOwnerId(owner.getId());
+//        return bookingRepo.findByParkingSlotOwnerId(owner.getId());
+        return null;
     }
 }

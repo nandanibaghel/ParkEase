@@ -16,4 +16,5 @@ public class ParkingSlotRequestDTO {
     private Double pricePerHour;
 
     private Boolean isAvailable;
+    private Long areaId;
 }

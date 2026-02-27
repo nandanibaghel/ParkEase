@@ -9,7 +9,9 @@ import com.parkease.models.ParkingSlot;
 
 public interface OwnerSlotService {
     ParkingSlot addSlot(ParkingSlotRequestDTO slot);
-    
-    ParkingSlot updateSlot(Long slotId, ParkingSlot updatedSlot);
+  
 	List<ParkingSlot> getOwnerSlots();
+	Boolean deleteSlot(Long slotId);
+
+	ParkingSlot updateSlot(Long slotId, ParkingSlotRequestDTO updatedSlot);
 }
