@@ -6,8 +6,8 @@ import com.parkease.models.ParkingSlot;
 import java.util.List;
 
 public interface UserBookingService {
-    List<ParkingSlot> getAvailableSlots();
-    BookingResponseDTO bookSlot(BookingRequestDTO request);
+	BookingResponseDTO bookSlot(BookingRequestDTO request);
+//    List<ParkingSlot> getAvailableSlots();
     List<BookingResponseDTO> getMyBookings();
-    String cancelBooking(Long bookingId);
+    void cancelBooking(Long bookingId);
 }

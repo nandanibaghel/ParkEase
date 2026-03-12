@@ -7,5 +7,5 @@ import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import com.parkease.models.Booking;
 
 public interface OwnerBookingService {
-    List<Booking> getOwnerBookings();
+//    List<Booking> getOwnerBookings();
 }

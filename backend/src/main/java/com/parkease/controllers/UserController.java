@@ -16,10 +16,10 @@ public class UserController {
 
     private final UserBookingService userBookingService;
 
-    @GetMapping("/slots")
-    public ResponseEntity<List<ParkingSlot>> getAvailableSlots() {
-        return ResponseEntity.ok(userBookingService.getAvailableSlots());
-    }
+//    @GetMapping("/slots")
+//    public ResponseEntity<List<ParkingSlot>> getAvailableSlots() {
+//        return ResponseEntity.ok(userBookingService.getAvailableSlots());
+//    }
 
     @PostMapping("/bookings")
     public ResponseEntity<BookingResponseDTO> bookSlot(
@@ -27,13 +27,13 @@ public class UserController {
         return ResponseEntity.ok(userBookingService.bookSlot(request));
     }
 
-    @GetMapping("/bookings")
-    public ResponseEntity<List<BookingResponseDTO>> getMyBookings() {
-        return ResponseEntity.ok(userBookingService.getMyBookings());
-    }
+//    @GetMapping("/bookings")
+//    public ResponseEntity<List<BookingResponseDTO>> getMyBookings() {
+//        return ResponseEntity.ok(userBookingService.getMyBookings());
+//    }
 
-    @DeleteMapping("/bookings/{id}")
-    public ResponseEntity<String> cancelBooking(@PathVariable Long id) {
-        return ResponseEntity.ok(userBookingService.cancelBooking(id));
-    }
+//    @DeleteMapping("/bookings/{id}")
+//    public ResponseEntity<String> cancelBooking(@PathVariable Long id) {
+//        return ResponseEntity.ok(userBookingService.cancelBooking(id));
+//    }
 }

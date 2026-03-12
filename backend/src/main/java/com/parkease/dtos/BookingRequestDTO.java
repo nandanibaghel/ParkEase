@@ -1,10 +1,14 @@
 package com.parkease.dtos;
 
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 public class BookingRequestDTO {
+
     private Long slotId;
-    private String startTime;
-    private String endTime;
+
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
 }

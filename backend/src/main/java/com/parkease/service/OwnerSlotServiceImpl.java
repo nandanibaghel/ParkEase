@@ -1,14 +1,15 @@
-<<<<<<< HEAD
 package com.parkease.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.parkease.dtos.ParkingSlotRequestDTO;
+import com.parkease.dtos.ParkingSlotResponseDTO;
 import com.parkease.models.ParkingArea;
 import com.parkease.models.ParkingSlot;
 import com.parkease.models.User;
@@ -23,136 +24,114 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OwnerSlotServiceImpl implements OwnerSlotService {
 
-	@Autowired
+    @Autowired
     private ParkingSlotRepo slotRepo;
-	@Autowired
-    private UserRepository userRepository;
-	@Autowired
-	private ParkingAreaRepo areaRepo;
 
-	@Override
-	public Boolean deleteSlot(Long slotId) {
-		return true;
-	}
-	
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ParkingAreaRepo areaRepo;
+
     @Override
-    public ParkingSlot addSlot(ParkingSlotRequestDTO request) {
+    public ParkingSlotResponseDTO addSlot(ParkingSlotRequestDTO request) {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User owner = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
 
         ParkingArea area = areaRepo.findById(request.getAreaId())
                 .orElseThrow(() -> new RuntimeException("Parking area not found"));
 
         ParkingSlot slot = new ParkingSlot();
+        slot.setSlotNumber(request.getSlotNumber());
+        slot.setPricePerHour(request.getPricePerHour());
         slot.setIsAvailable(request.getIsAvailable());
+        slot.setVehicleType(VehicleType.valueOf(request.getVehicleType()));
         slot.setParkingArea(area);
-        slot.setPricePerHour(request.getPricePerHour());
-        slot.setSlotNumber(request.getSlotNumber());
-        slot.setVehicleType(VehicleType.valueOf(request.getVehicleType()));
 
-        return slotRepo.save(slot);
-    }
-
-//    @Override
-//    public List<ParkingSlot> getOwnerSlots() {
-//
-//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-//
-//        User owner = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("Owner not found"));
-//
-//        return slotRepo.findByOwnerId(owner.getId());
-//    }
-    @Override
-    public List<ParkingSlot> getOwnerSlots() {
-    	// TODO Auto-generated method stub
-    	return null;
+        slot = slotRepo.save(slot);
+        return mapToDTO(slot);
+        
     }
 
     @Override
-    public ParkingSlot updateSlot(Long slotId, ParkingSlotRequestDTO updatedSlot) {
+    public List<ParkingSlotResponseDTO> getOwnerSlots(Long areaId) {
+    	
+
+        User owner = getCurrentOwner(); // from JWT / SecurityContext
+        
+        
+        ParkingArea area= areaRepo.findById(areaId).orElse(null);
+        if(area == null) {
+        	throw new RuntimeException("invalid args");
+        	
+        }
+        if(area.getOwner().getId() != owner.getId()) {
+        	throw new RuntimeException("user not autherize");
+        }
+        
+        List<ParkingSlot> slots  = slotRepo.findByParkingArea(area);
+        
+
+        return slots.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+    
+    private User getCurrentOwner() {
+    	String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    	User user = userRepository.findByEmail(email).orElse(null);
+    	if(email ==null || user == null) {
+    		throw new RuntimeException("user not found");
+    	}
+    	return user;
+    }
+    
+    private ParkingSlotResponseDTO mapToDTO(ParkingSlot slot) {
+
+        ParkingSlotResponseDTO dto = new ParkingSlotResponseDTO();
+        dto.setId(slot.getId());
+        dto.setSlotNumber(slot.getSlotNumber());
+        dto.setPrice(slot.getPricePerHour());
+        dto.setIsAvailable(slot.getIsAvailable());
+        dto.setVehicleType(slot.getVehicleType().name());
+       
+        dto.setParkingAreaId(slot.getParkingArea().getId());
+        dto.setParkingAreaName(slot.getParkingArea().getLotName());
+
+        return dto;
+    }
+
+    @Override
+    public ParkingSlotResponseDTO updateSlot(Long slotId, ParkingSlotRequestDTO updatedSlot) {
 
         ParkingSlot slot = slotRepo.findById(slotId)
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
+        
+        if(updatedSlot.getPricePerHour() != null) {
+        	slot.setPricePerHour(updatedSlot.getPricePerHour());        	
+        } 
+        if(updatedSlot.getIsAvailable() !=null) {   	
+        	slot.setIsAvailable(updatedSlot.getIsAvailable());
+        } 
+        if(updatedSlot.getVehicleType() !=null) {
+        	slot.setVehicleType(VehicleType.valueOf(updatedSlot.getVehicleType()));        	
+        }
 
-        slot.setPricePerHour(updatedSlot.getPricePerHour());
-        slot.setIsAvailable(updatedSlot.getIsAvailable());
-        slot.setVehicleType(VehicleType.valueOf( updatedSlot.getVehicleType()));
-
-        return slotRepo.save(slot);
-    }
-
-
-	
-}
-=======
-package com.parkease.service;
-
-import java.util.List;
-
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-
-import com.parkease.dtos.ParkingSlotRequestDTO;
-import com.parkease.models.ParkingSlot;
-import com.parkease.models.User;
-import com.parkease.models.VehicleType;
-import com.parkease.repository.ParkingSlotRepo;
-import com.parkease.repository.UserRepository;
-
-import lombok.RequiredArgsConstructor;
-
-@Service
-@RequiredArgsConstructor
-public class OwnerSlotServiceImpl implements OwnerSlotService {
-
-	@Autowired
-    private ParkingSlotRepo slotRepo;
-	@Autowired
-    private UserRepository userRepository;
-
-    @Override
-    public ParkingSlot addSlot(ParkingSlotRequestDTO request) {
-
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Owner not found"));
-
-        ParkingSlot slot = new ParkingSlot();
-        slot.setIsAvailable(request.getIsAvailable());
-        slot.setOwner(owner);
-        slot.setPricePerHour(request.getPricePerHour());
-        slot.setSlotNumber(request.getSlotNumber());
-        slot.setVehicleType(VehicleType.valueOf(request.getVehicleType()));
-
-        return slotRepo.save(slot);
+        slot = slotRepo.save(slot);
+        return mapToDTO(slot);
     }
 
     @Override
-    public List<ParkingSlot> getOwnerSlots() {
+    public Boolean deleteSlot(Long slotId) {
 
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!slotRepo.existsById(slotId)) {
+            throw new RuntimeException("Slot not found");
+        }
 
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Owner not found"));
-
-        return slotRepo.findByOwnerId(owner.getId());
-    }
-
-    @Override
-    public ParkingSlot updateSlot(Long slotId, ParkingSlot updatedSlot) {
-
-        ParkingSlot slot = slotRepo.findById(slotId)
-                .orElseThrow(() -> new RuntimeException("Slot not found"));
-
-        slot.setPricePerHour(updatedSlot.getPricePerHour());
-        slot.setIsAvailable(updatedSlot.getIsAvailable());
-        slot.setVehicleType(updatedSlot.getVehicleType());
-
-        return slotRepo.save(slot);
+        slotRepo.deleteById(slotId);
+        return true;
     }
 }
->>>>>>> 94f254670e09825d37c4102ad2d3c7ce00be4e15

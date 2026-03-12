@@ -22,13 +22,13 @@ public class OwnerBookingController {
 	@Autowired
     private OwnerBookingService ownerBookingService;
     
-
-    @GetMapping
-    public ResponseEntity<List<Booking>> getOwnerBookings(
-            Authentication authentication) {
-
-        return ResponseEntity.ok(
-                ownerBookingService.getOwnerBookings()
-        );
-    }
+//
+//    @GetMapping
+//    public ResponseEntity<List<Booking>> getOwnerBookings(
+//            Authentication authentication) {
+//
+//        return ResponseEntity.ok(
+//                ownerBookingService.getOwnerBookings()
+//        );
+//    }
 }

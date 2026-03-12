@@ -36,69 +36,26 @@ public class UserBookingServiceImpl implements UserBookingService {
         dto.setPricePerHour(b.getParkingSlot().getPricePerHour());
         dto.setStartTime(b.getStartTime());
         dto.setEndTime(b.getEndTime());
-        dto.setStatus(b.getStatus());
+        dto.setStatus(b.getStatus().name());
+        dto.setParkingAreaName(b.getParkingSlot().getParkingArea().getLotName());
 
         long hours = ChronoUnit.HOURS.between(b.getStartTime(), b.getEndTime());
         dto.setTotalCost(hours * b.getParkingSlot().getPricePerHour());
 
         return dto;
     }
-
+    
     @Override
-    public List<ParkingSlot> getAvailableSlots() {
-        return slotRepo.findByIsAvailableTrue();
-    }
+    public void cancelBooking(Long bookingId) {
 
-    @Override
-    public BookingResponseDTO bookSlot(BookingRequestDTO request) {
-        User user = getCurrentUser();
-
-        ParkingSlot slot = slotRepo.findById(request.getSlotId())
-                .orElseThrow(() -> new RuntimeException("Slot not found"));
-
-        if (!slot.getIsAvailable()) {
-            throw new RuntimeException("Slot is already booked");
-        }
-
-        LocalDateTime start = LocalDateTime.parse(request.getStartTime());
-        LocalDateTime end   = LocalDateTime.parse(request.getEndTime());
-
-        if (!end.isAfter(start)) {
-            throw new RuntimeException("End time must be after start time");
-        }
-
-        Booking booking = new Booking();
-        booking.setUser(user);
-        booking.setParkingSlot(slot);
-        booking.setStartTime(start);
-        booking.setEndTime(end);
-        booking.setStatus(BookingStatus.BOOKED);
-
-        slot.setIsAvailable(false);
-        slotRepo.save(slot);
-
-        Booking saved = bookingRepo.save(booking);
-        return toDTO(saved);
-    }
-
-    @Override
-    public List<BookingResponseDTO> getMyBookings() {
-        User user = getCurrentUser();
-        return bookingRepo.findByUserId(user.getId())
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public String cancelBooking(Long bookingId) {
         User user = getCurrentUser();
 
         Booking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
+        // Security check (user should cancel only his booking)
         if (!booking.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("You can only cancel your own bookings");
+            throw new RuntimeException("You cannot cancel this booking");
         }
 
         if (booking.getStatus() == BookingStatus.CANCELLED) {
@@ -106,12 +63,53 @@ public class UserBookingServiceImpl implements UserBookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
+
         bookingRepo.save(booking);
+    }
+    
+    @Override
+    public List<BookingResponseDTO> getMyBookings() {
 
-        ParkingSlot slot = booking.getParkingSlot();
-        slot.setIsAvailable(true);
-        slotRepo.save(slot);
+        User user = getCurrentUser();
 
-        return "Booking cancelled successfully";
+        List<Booking> bookings = bookingRepo.findByUserId(user.getId());
+
+        return bookings.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public BookingResponseDTO bookSlot(BookingRequestDTO request) {
+
+        User user = getCurrentUser(); // from JWT
+
+        ParkingSlot slot = slotRepo.findById(request.getSlotId())
+                .orElseThrow(() -> new RuntimeException("Slot not found"));
+
+        // Check overlapping booking
+        boolean alreadyBooked =
+                bookingRepo.existsByParkingSlotIdAndStatusAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+                        slot.getId(),
+                        BookingStatus.BOOKED,
+                        request.getEndTime(),
+                        request.getStartTime()
+                );
+
+        if (alreadyBooked) {
+            throw new RuntimeException("Slot already booked for this time");
+        }
+
+        Booking booking = new Booking();
+        booking.setUser(user);
+        booking.setParkingSlot(slot);
+        booking.setStartTime(request.getStartTime());
+        booking.setEndTime(request.getEndTime());
+        booking.setStatus(BookingStatus.BOOKED);
+
+        Booking savedBooking = bookingRepo.save(booking);
+
+     
+        return toDTO(savedBooking);
     }
 }
