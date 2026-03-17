@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ParkeaseApplication<parkease>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.parkease.ParkeaseApplication",
+            "projectName": "parkease",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
