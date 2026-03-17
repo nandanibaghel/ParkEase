@@ -39,24 +39,39 @@ public class OwnerSlotServiceImpl implements OwnerSlotService {
     @Override
     @Transactional
     public ParkingSlot addSlot(ParkingSlotRequestDTO request) {
-        ParkingArea area = areaRepo.findById(request.getAreaId())
-                .orElseThrow(() -> new RuntimeException("Parking area not found"));
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User owner = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+        // Find existing area for this owner or create a new one automatically
+        ParkingArea area = areaRepo.findByOwner(owner)
+                .orElseGet(() -> {
+                    ParkingArea newArea = new ParkingArea();
+                    newArea.setLotName(owner.getFullName() + "'s Parking");
+                    newArea.setOwner(owner);
+                    return areaRepo.save(newArea);
+                });
+
         ParkingSlot slot = new ParkingSlot();
-        slot.setIsAvailable(request.getIsAvailable());
-        slot.setParkingArea(area);
-        slot.setPricePerHour(request.getPricePerHour());
         slot.setSlotNumber(request.getSlotNumber());
         slot.setVehicleType(VehicleType.valueOf(request.getVehicleType()));
+        slot.setPricePerHour(request.getPricePerHour());
+        slot.setIsAvailable(true);
+        slot.setParkingArea(area);
         return slotRepo.save(slot);
     }
 
     @Override
-    @Transactional  // ← This is the key fix
+    @Transactional
     public List<ParkingSlot> getOwnerSlots() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User owner = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Owner not found"));
-        return slotRepo.findAll();
+
+        // Get only this owner's parking area slots
+        ParkingArea area = areaRepo.findByOwner(owner).orElse(null);
+        if (area == null) return List.of();
+        return slotRepo.findByParkingArea(area);
     }
 
     @Override

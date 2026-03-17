@@ -12,6 +12,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
 
@@ -29,8 +31,13 @@ public class ParkingArea {
     private String pincode;
     private int totalSlots;
 
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    @JsonIgnoreProperties({"password","bookings","slots"})
+    private User owner;
+
     @OneToMany(mappedBy = "parkingArea", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
     @JsonManagedReference
     private List<ParkingSlot> slots = new ArrayList<>();
 }
