@@ -2386,5 +2386,467 @@ function exportCurrentSection() {
   else showToast('⚠️','Select a section to export.');
 }
 </script>
+
+<!-- ═══════ PARKEASE AI AGENT ═══════ -->
+<div id="ai-btn" onclick="aiToggle()" style="display:none;position:fixed;bottom:32px;right:32px;width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,#00d4aa,#0099ff);align-items:center;justify-content:center;cursor:pointer;z-index:500;box-shadow:0 8px 32px rgba(0,212,170,0.45);transition:transform 0.3s;">
+  <div style="position:absolute;inset:-5px;border-radius:50%;border:2px solid #00d4aa;animation:aip 2s ease-out infinite;opacity:0;"></div>
+  <span style="font-size:1.7rem;">🤖</span>
+</div>
+
+<div id="ai-win" style="display:none;position:fixed;bottom:110px;right:32px;width:390px;height:610px;background:#0d1117;border:1px solid rgba(0,212,170,0.25);border-radius:24px;flex-direction:column;z-index:499;box-shadow:0 24px 80px rgba(0,0,0,0.7);overflow:hidden;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(135deg,rgba(0,212,170,0.14),rgba(0,153,255,0.08));border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="position:relative;width:40px;height:40px;background:rgba(0,212,170,0.12);border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(0,212,170,0.3);">
+        <span style="font-size:1.2rem;">🤖</span>
+        <div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;background:#00e676;border-radius:50%;border:2px solid #0d1117;animation:aiblink 2s infinite;"></div>
+      </div>
+      <div>
+        <div style="font-family:Syne,sans-serif;font-weight:800;font-size:0.95rem;color:#e8edf5;">ParkEase AI Agent</div>
+        <div style="font-size:0.65rem;color:#00d4aa;font-family:Space Mono,monospace;">Does everything for you ✨</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;">
+      <button onclick="aiClear()" title="Clear" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#7a8ba0;cursor:pointer;font-size:0.8rem;">🗑️</button>
+      <button onclick="aiToggle()" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#7a8ba0;cursor:pointer;font-size:0.9rem;">✕</button>
+    </div>
+  </div>
+
+  <!-- Lang bar -->
+  <div style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;background:rgba(0,0,0,0.18);overflow-x:auto;">
+    <span style="font-size:0.65rem;color:#7a8ba0;white-space:nowrap;">🌐</span>
+    <button class="ailb active" onclick="aiLang(this,'auto')">Auto</button>
+    <button class="ailb" onclick="aiLang(this,'english')">EN</button>
+    <button class="ailb" onclick="aiLang(this,'hindi')">हिं</button>
+    <button class="ailb" onclick="aiLang(this,'tamil')">த</button>
+    <button class="ailb" onclick="aiLang(this,'telugu')">తె</button>
+    <button class="ailb" onclick="aiLang(this,'tanglish')">Tan</button>
+  </div>
+
+  <!-- Messages -->
+  <div id="ai-msgs" style="flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;"></div>
+
+  <!-- Quick actions -->
+  <div id="ai-qs" style="padding:8px 12px;display:flex;gap:5px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,0.04);flex-shrink:0;background:rgba(0,0,0,0.12);">
+    <button class="aiqs" onclick="aiQ(this)">🚗 Book cheap slot</button>
+    <button class="aiqs" onclick="aiQ(this)">📋 My bookings</button>
+    <button class="aiqs" onclick="aiQ(this)">❌ Cancel booking</button>
+    <button class="aiqs" onclick="aiQ(this)">💰 Cheapest slot?</button>
+    <button class="aiqs" onclick="aiQ(this)">🏍️ Bike slots?</button>
+    <button class="aiqs" onclick="aiQ(this)">🚛 Truck slots?</button>
+  </div>
+
+  <!-- Input -->
+  <div style="padding:10px 12px 14px;border-top:1px solid rgba(255,255,255,0.05);flex-shrink:0;background:rgba(0,0,0,0.18);">
+    <div style="display:flex;gap:8px;align-items:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:8px 8px 8px 14px;" id="ai-iw">
+      <input type="text" id="ai-i" placeholder="Tell me what to do..." onkeydown="if(event.key==='Enter')aiSend()" oninput="aiTgl()" style="flex:1;background:none;border:none;outline:none;color:#e8edf5;font-size:0.85rem;font-family:DM Sans,sans-serif;">
+      <button id="ai-sb" onclick="aiSend()" disabled style="width:34px;height:34px;border-radius:10px;border:none;background:linear-gradient(135deg,#00d4aa,#0099ff);color:#000;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.35;cursor:not-allowed;transition:all 0.2s;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+    <div style="text-align:center;font-size:0.58rem;color:rgba(122,139,160,0.45);margin-top:6px;font-family:Space Mono,monospace;">AI Agent · Free · Powered by Groq LLaMA</div>
+  </div>
+</div>
+
+<style>
+@keyframes aip{0%{transform:scale(1);opacity:0.7;}100%{transform:scale(1.55);opacity:0;}}
+@keyframes aiblink{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes aitb{0%,80%,100%{transform:translateY(0);opacity:0.5;}40%{transform:translateY(-7px);opacity:1;}}
+@keyframes aipop{from{opacity:0;transform:scale(0.88) translateY(18px);}to{opacity:1;transform:scale(1) translateY(0);}}
+#ai-btn:hover{transform:scale(1.1)!important;}
+.ailb{padding:2px 9px;border-radius:100px;border:1px solid rgba(255,255,255,0.09);background:transparent;color:#7a8ba0;font-size:0.68rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;white-space:nowrap;transition:all 0.2s;}
+.ailb.active,.ailb:hover{background:rgba(0,212,170,0.13);border-color:rgba(0,212,170,0.4);color:#00d4aa;}
+.aiqs{padding:4px 10px;border-radius:100px;border:1px solid rgba(0,212,170,0.22);background:rgba(0,212,170,0.07);color:#00d4aa;font-size:0.7rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;white-space:nowrap;transition:all 0.18s;}
+.aiqs:hover{background:rgba(0,212,170,0.16);}
+.aibot{display:flex;gap:7px;align-items:flex-end;}
+.aiuser{display:flex;gap:7px;align-items:flex-end;flex-direction:row-reverse;}
+.aiav{width:28px;height:28px;border-radius:9px;background:rgba(0,212,170,0.13);display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;border:1px solid rgba(0,212,170,0.18);}
+.aibub{max-width:87%;}
+.aibtxt{padding:9px 13px;border-radius:17px;border-bottom-left-radius:3px;font-size:0.83rem;line-height:1.6;word-break:break-word;background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.065);color:#e8edf5;}
+.aiutxt{padding:9px 13px;border-radius:17px;border-bottom-right-radius:3px;font-size:0.83rem;line-height:1.6;word-break:break-word;background:linear-gradient(135deg,rgba(0,212,170,0.22),rgba(0,153,255,0.17));border:1px solid rgba(0,212,170,0.28);color:#e8edf5;text-align:right;}
+.aitm{font-size:0.6rem;color:#7a8ba0;margin-top:3px;padding:0 3px;}
+.aiuser .aitm{text-align:right;}
+.aidots{display:flex;gap:4px;align-items:center;padding:9px 13px;}
+.aidots span{width:6px;height:6px;background:#00d4aa;border-radius:50%;animation:aitb 1.2s infinite;opacity:0.5;}
+.aidots span:nth-child(2){animation-delay:0.2s;}.aidots span:nth-child(3){animation-delay:0.4s;}
+.aicard{background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.22);border-radius:12px;padding:11px 13px;margin-top:9px;}
+.aicard-title{font-size:0.68rem;color:#00d4aa;font-weight:700;margin-bottom:7px;font-family:Space Mono,monospace;text-transform:uppercase;}
+.aicard-row{display:flex;justify-content:space-between;font-size:0.79rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.aicard-row:last-child{border:none;}
+.aibtn{display:block;margin-top:9px;padding:8px;border-radius:10px;background:linear-gradient(135deg,#00d4aa,#0099ff);color:#000;font-size:0.78rem;font-weight:700;cursor:pointer;border:none;font-family:Syne,sans-serif;width:100%;text-align:center;transition:opacity 0.2s;}
+.aibtn:hover{opacity:0.88;}.aibtn:disabled{opacity:0.5;cursor:not-allowed;}
+.aicancelbtn{display:block;margin-top:6px;padding:8px;border-radius:10px;background:rgba(255,107,53,0.12);color:#ff6b35;font-size:0.78rem;font-weight:700;cursor:pointer;border:1px solid rgba(255,107,53,0.28);font-family:Syne,sans-serif;width:100%;text-align:center;}
+.aislot-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);font-size:0.75rem;margin:2px;cursor:pointer;}
+.aislot-chip:hover{background:rgba(0,212,170,0.2);}
+.ai-status-ok{color:#00d4aa;font-weight:700;}
+.ai-status-cancel{color:#7a8ba0;}
+#ai-msgs::-webkit-scrollbar{width:3px;}
+#ai-msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px;}
+#ai-iw:focus-within{border-color:rgba(0,212,170,0.45)!important;}
+@media(max-width:480px){#ai-win{width:calc(100vw - 20px);right:10px;bottom:100px;}#ai-btn{right:14px!important;bottom:22px!important;}}
+</style>
+
+<script>
+(function(){
+'use strict';
+var GK='your-groq-api-key-here';
+var GU='https://api.groq.com/openai/v1/chat/completions';
+var GM='llama-3.3-70b-versatile';
+var API='http://127.0.0.1:8080';
+var ai={open:false,busy:false,lang:'auto',hist:[],n:0};
+
+/* ── hook login/logout ── */
+var _ls=loginSuccess;
+loginSuccess=async function(){
+  await _ls.apply(this,arguments);
+  setTimeout(function(){if(state.currentUser){document.getElementById('ai-btn').style.display='flex';}},700);
+};
+var _dl=doLogout;
+doLogout=function(){
+  _dl.apply(this,arguments);
+  document.getElementById('ai-btn').style.display='none';
+  document.getElementById('ai-win').style.display='none';
+  ai.open=false;ai.hist=[];ai.n=0;
+  aiReset();
+};
+
+/* ── ui helpers ── */
+window.aiToggle=function(){
+  ai.open=!ai.open;
+  var w=document.getElementById('ai-win');
+  if(ai.open){w.style.display='flex';w.style.animation='aipop 0.32s ease';document.getElementById('ai-i').focus();aiScroll();}
+  else w.style.display='none';
+};
+window.aiLang=function(b,l){document.querySelectorAll('.ailb').forEach(function(x){x.classList.remove('active');});b.classList.add('active');ai.lang=l;};
+window.aiTgl=function(){var v=document.getElementById('ai-i').value.trim(),b=document.getElementById('ai-sb');b.disabled=!v;b.style.opacity=v?'1':'0.35';b.style.cursor=v?'pointer':'not-allowed';};
+window.aiQ=function(b){document.getElementById('ai-i').value=b.textContent.replace(/^[^\w\u0900-\u097F\u0B80-\u0BFF\u0C00-\u0C7F]+/,'').trim();window.aiTgl();window.aiSend();};
+window.aiClear=function(){ai.hist=[];ai.n=0;document.getElementById('ai-qs').style.display='flex';aiReset();};
+
+function aiScroll(){var e=document.getElementById('ai-msgs');if(e)setTimeout(function(){e.scrollTop=e.scrollHeight;},60);}
+function aiT(){return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');}
+
+function aiBot(html){
+  var m=document.getElementById('ai-msgs');
+  m.innerHTML+='<div class="aibot"><div class="aiav">🤖</div><div class="aibub"><div class="aibtxt">'+html+'</div><div class="aitm">'+aiT()+'</div></div></div>';
+  aiScroll();
+}
+function aiUser(t){
+  var m=document.getElementById('ai-msgs');
+  m.innerHTML+='<div class="aiuser"><div class="aibub"><div class="aiutxt">'+esc(t)+'</div><div class="aitm">'+aiT()+'</div></div><div class="aiav">👤</div></div>';
+  aiScroll();
+}
+function aiLoading(){
+  document.getElementById('ai-msgs').innerHTML+='<div class="aibot" id="ai-ld"><div class="aiav">🤖</div><div class="aibub"><div class="aibtxt"><div class="aidots"><span></span><span></span><span></span></div></div></div></div>';
+  aiScroll();
+}
+function aiRmLoad(){var e=document.getElementById('ai-ld');if(e)e.remove();}
+
+function aiReset(){
+  document.getElementById('ai-msgs').innerHTML='';
+  aiBot('Hi! I am your <strong>ParkEase AI Agent</strong> 🤖✨<br><br>I can <strong>actually do things</strong> for you — just ask!<br><br>🚗 <em>Book me a cheap car slot</em><br>❌ <em>Cancel my booking</em><br>📋 <em>Show my bookings</em><br>💰 <em>What is the cheapest slot?</em><br>🔍 <em>Show available bike slots</em><br>👤 <em>Update my profile</em><br><br>Works in <strong>English, Hindi, Tamil, Telugu & Tanglish!</strong>');
+}
+
+/* ── backend calls ── */
+function hdr(){return{'Content-Type':'application/json','Authorization':'Bearer '+state.token};}
+
+async function apiGet(url){
+  try{var r=await fetch(API+url,{headers:hdr()});return await r.json();}catch(e){return null;}
+}
+async function apiPost(url,body){
+  try{var r=await fetch(API+url,{method:'POST',headers:hdr(),body:JSON.stringify(body)});return{ok:r.ok,data:await r.json()};}catch(e){return{ok:false,data:{}};}
+}
+async function apiDelete(url){
+  try{var r=await fetch(API+url,{method:'DELETE',headers:hdr()});return r.ok;}catch(e){return false;}
+}
+
+async function refreshData(){
+  try{
+    var slots=await apiGet('/user/slots');
+    if(slots)state.allSlots=slots;
+    if(state.currentUser&&state.currentUser.role==='user'){
+      var bk=await apiGet('/user/bookings');
+      if(bk)state.allBookings=bk;
+    }
+  }catch(e){}
+}
+
+/* ── action executors ── */
+async function doShowSlots(filter){
+  var slots=state.allSlots||[];
+  var avail=slots.filter(function(s){return s.isAvailable;});
+  if(filter)avail=avail.filter(function(s){return(s.vehicleType||'CAR').toUpperCase()===filter.toUpperCase();});
+  if(!avail.length)return'<em>No slots available right now.</em>';
+  var html='<strong>Available Slots ('+avail.length+'):</strong><br><br>';
+  avail.forEach(function(s){
+    var ic=s.vehicleType==='BIKE'?'🏍️':s.vehicleType==='TRUCK'?'🚛':'🚗';
+    html+=ic+' <strong>'+s.slotNumber+'</strong> · $'+s.pricePerHour+'/hr';
+    if(s.location)html+=' · 📍'+s.location;
+    html+='<br>';
+  });
+  return html;
+}
+
+async function doShowBookings(){
+  var bk=state.allBookings||[];
+  if(!bk.length)return'<em>You have no bookings yet.</em>';
+  var html='<strong>Your Bookings ('+bk.length+'):</strong><br><br>';
+  bk.forEach(function(b){
+    var ic=b.status==='CANCELLED'?'❌':b.status==='BOOKED'?'✅':'🔄';
+    var col=b.status==='CANCELLED'?'#7a8ba0':'#00d4aa';
+    html+=ic+' <strong>#'+b.id+'</strong> · '+(b.slotNumber||'?')+' · <span style="color:'+col+'">'+b.status+'</span>';
+    if(b.totalCost)html+=' · $'+b.totalCost.toFixed(2);
+    html+='<br>';
+  });
+  return html;
+}
+
+async function doBook(slotId,hours){
+  var slot=(state.allSlots||[]).find(function(s){return String(s.id)===String(slotId);});
+  if(!slot)return null;
+  var now=new Date();now.setHours(now.getHours()+1,0,0,0);
+  var end=new Date(now.getTime()+(hours||2)*3600000);
+  var pad=function(n){return String(n).padStart(2,'0');};
+  var fmtD=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes())+':00';};
+  var res=await apiPost('/user/bookings',{slotId:parseInt(slotId),startTime:fmtD(now),endTime:fmtD(end)});
+  if(res.ok){
+    await refreshData();
+    if(typeof loadUserSlots==='function')loadUserSlots();
+    if(typeof loadUserBookings==='function')loadUserBookings();
+    showToast('✅','AI booked '+slot.slotNumber+' for you!');
+  }
+  return{ok:res.ok,slot:slot,hours:hours||2,cost:((hours||2)*slot.pricePerHour).toFixed(2),msg:res.data&&res.data.message};
+}
+
+async function doCancel(bookingId){
+  var ok=await apiDelete('/user/bookings/'+bookingId);
+  if(ok){
+    await refreshData();
+    if(typeof loadUserBookings==='function')loadUserBookings();
+    showToast('✅','Booking #'+bookingId+' cancelled by AI!');
+  }
+  return ok;
+}
+
+async function doGetProfile(){
+  var p=await apiGet('/user/profile');
+  if(!p)return'<em>Could not load profile.</em>';
+  return'<strong>Your Profile:</strong><br><br>'+
+    '👤 <strong>Name:</strong> '+(p.fullName||'—')+'<br>'+
+    '📧 <strong>Email:</strong> '+(p.email||'—')+'<br>'+
+    '📱 <strong>Phone:</strong> '+(p.phoneNumber||'—')+'<br>'+
+    '🎭 <strong>Role:</strong> '+(p.role||'—')+'<br>'+
+    '📅 <strong>Joined:</strong> '+(p.createdAt?new Date(p.createdAt).toLocaleDateString():'—');
+}
+
+/* ── confirm book card ── */
+window.aiConfirmBook=async function(slotId,hours,btn){
+  btn.disabled=true;btn.textContent='Booking...';
+  var r=await doBook(slotId,hours);
+  if(r&&r.ok){
+    btn.parentElement.innerHTML='<div style="color:#00d4aa;font-weight:700;text-align:center;padding:6px;">✅ Booked successfully!</div>';
+  } else {
+    btn.textContent='❌ '+(r&&r.msg?r.msg:'Failed');
+    btn.disabled=false;
+  }
+};
+
+/* ── confirm cancel card ── */
+window.aiConfirmCancel=async function(id,btn){
+  btn.disabled=true;btn.textContent='Cancelling...';
+  var ok=await doCancel(id);
+  if(ok){
+    btn.parentElement.innerHTML='<div style="color:#00d4aa;font-weight:700;text-align:center;padding:6px;">✅ Cancelled!</div>';
+  } else {
+    btn.textContent='❌ Failed';btn.disabled=false;
+  }
+};
+
+/* ── execute action from AI command ── */
+async function execCmd(cmd){
+  var p=cmd.split(':');
+  var act=p[0].trim().toUpperCase();
+
+  if(act==='SHOW_SLOTS'){return await doShowSlots(p[1]);}
+  if(act==='SHOW_BOOKINGS'){return await doShowBookings();}
+  if(act==='GET_PROFILE'){return await doGetProfile();}
+
+  if(act==='BOOK'){
+    var sid=p[1],hrs=parseInt(p[2])||2;
+    var slot=(state.allSlots||[]).find(function(s){return String(s.id)===String(sid);});
+    if(!slot)return'⚠️ Slot not found.';
+    var cost=(hrs*slot.pricePerHour).toFixed(2);
+    return'<div class="aicard">'+
+      '<div class="aicard-title">🅿️ Booking Summary</div>'+
+      '<div class="aicard-row"><span>Slot</span><span><strong>'+slot.slotNumber+'</strong></span></div>'+
+      '<div class="aicard-row"><span>Type</span><span>'+(slot.vehicleType||'CAR')+'</span></div>'+
+      '<div class="aicard-row"><span>Duration</span><span>'+hrs+' hour'+(hrs>1?'s':'')+'</span></div>'+
+      '<div class="aicard-row"><span>Price</span><span>$'+slot.pricePerHour+'/hr</span></div>'+
+      '<div class="aicard-row"><span><strong>Total Cost</strong></span><span style="color:#00d4aa;font-weight:700">$'+cost+'</span></div>'+
+      '<button class="aibtn" onclick="aiConfirmBook('+sid+','+hrs+',this)">✅ Confirm & Book Now</button>'+
+      '</div>';
+  }
+
+  if(act==='CANCEL'){
+    var bid=p[1];
+    var bk=(state.allBookings||[]).find(function(b){return String(b.id)===String(bid);});
+    if(!bk)return'⚠️ Booking not found.';
+    if(bk.status==='CANCELLED')return'ℹ️ Booking #'+bid+' is already cancelled.';
+    return'<div class="aicard">'+
+      '<div class="aicard-title">⚠️ Cancel Booking</div>'+
+      '<div class="aicard-row"><span>Booking</span><span>#'+bid+'</span></div>'+
+      '<div class="aicard-row"><span>Slot</span><span>'+(bk.slotNumber||'—')+'</span></div>'+
+      '<div class="aicard-row"><span>Status</span><span>'+bk.status+'</span></div>'+
+      '<button class="aicancelbtn" onclick="aiConfirmCancel('+bid+',this)">❌ Yes, Cancel This Booking</button>'+
+      '</div>';
+  }
+
+  if(act==='AUTO_BOOK'){
+    // AI picks best slot automatically
+    var vtype=p[1]||'CAR';
+    var budget=parseFloat(p[2])||9999;
+    var hrs2=parseInt(p[3])||2;
+    var slots2=(state.allSlots||[]).filter(function(s){
+      return s.isAvailable&&(s.vehicleType||'CAR').toUpperCase()===vtype.toUpperCase()&&s.pricePerHour<=budget;
+    });
+    slots2.sort(function(a,b){return a.pricePerHour-b.pricePerHour;});
+    if(!slots2.length)return'⚠️ No '+vtype+' slots available under $'+budget+'/hr.';
+    var best=slots2[0];
+    var cost2=(hrs2*best.pricePerHour).toFixed(2);
+    return'I found the best slot for you! 🎯<br><div class="aicard">'+
+      '<div class="aicard-title">🅿️ Best Available Slot</div>'+
+      '<div class="aicard-row"><span>Slot</span><span><strong>'+best.slotNumber+'</strong></span></div>'+
+      '<div class="aicard-row"><span>Type</span><span>'+(best.vehicleType||'CAR')+'</span></div>'+
+      '<div class="aicard-row"><span>Duration</span><span>'+hrs2+' hour'+(hrs2>1?'s':'')+'</span></div>'+
+      '<div class="aicard-row"><span>Price</span><span>$'+best.pricePerHour+'/hr</span></div>'+
+      '<div class="aicard-row"><span><strong>Total</strong></span><span style="color:#00d4aa;font-weight:700">$'+cost2+'</span></div>'+
+      '<button class="aibtn" onclick="aiConfirmBook('+best.id+','+hrs2+',this)">✅ Book This Slot Now</button>'+
+      '</div>';
+  }
+
+  return null;
+}
+
+/* ── build system prompt ── */
+function buildSys(){
+  var slots=state.allSlots||[];
+  var bk=state.allBookings||[];
+  var u=state.currentUser||{};
+  var avail=slots.filter(function(s){return s.isAvailable;}).map(function(s){
+    return s.slotNumber+'[ID='+s.id+',type='+(s.vehicleType||'CAR')+',price='+s.pricePerHour+']';
+  }).join(', ')||'none';
+  var mybk=bk.map(function(b){
+    return '#'+b.id+'[slot='+(b.slotNumber||'?')+',status='+b.status+',cost='+(b.totalCost||0)+']';
+  }).join(', ')||'none';
+  var lmap={
+    auto:'Detect user language from their message. Reply in EXACT same language. If Tanglish reply Tanglish. If Tamil reply Tamil. If Hindi reply Hindi. If Telugu reply Telugu.',
+    english:'Always reply in English only.',
+    hindi:'Always reply in Hindi (Devanagari) only.',
+    tamil:'Always reply in Tamil script only.',
+    telugu:'Always reply in Telugu script only.',
+    tanglish:'Always reply in Tanglish (Tamil+English mixed in Roman script) only.'
+  };
+  return [
+    'You are ParkEase AI Agent. You ACTUALLY perform actions for users - not just suggest.',
+    'LANGUAGE: '+(lmap[ai.lang]||lmap.auto),
+    'USER: '+(u.name||'User')+' | role='+( u.role||'user'),
+    '',
+    'LIVE DATA:',
+    'Available slots: '+avail,
+    'User bookings: '+mybk,
+    '',
+    'ACTIONS YOU CAN DO - put command on its own line at end of reply:',
+    'COMMAND:SHOW_SLOTS              → show all available slots',
+    'COMMAND:SHOW_SLOTS:CAR          → show only car slots',
+    'COMMAND:SHOW_SLOTS:BIKE         → show only bike slots',
+    'COMMAND:SHOW_SLOTS:TRUCK        → show only truck slots',
+    'COMMAND:SHOW_BOOKINGS           → show user bookings',
+    'COMMAND:GET_PROFILE             → show user profile',
+    'COMMAND:AUTO_BOOK:CAR:0:2       → auto pick cheapest car slot for 2 hours (0=no budget limit)',
+    'COMMAND:AUTO_BOOK:BIKE:5:1      → auto pick cheapest bike slot under $5 for 1 hour',
+    'COMMAND:BOOK:slotId:hours       → book specific slot (e.g. COMMAND:BOOK:5:2)',
+    'COMMAND:CANCEL:bookingId        → cancel specific booking (e.g. COMMAND:CANCEL:27)',
+    '',
+    'DECISION RULES:',
+    '- User says "book me a car slot" / "car slot book pannu" → use COMMAND:AUTO_BOOK:CAR:0:2',
+    '- User says "cheapest slot" → use COMMAND:AUTO_BOOK:CAR:0:2',
+    '- User says "book A-04" or specific slot name → find its ID and use COMMAND:BOOK:id:2',
+    '- User says "cancel booking" without number → use COMMAND:SHOW_BOOKINGS then ask which one',
+    '- User says "cancel #27" or "cancel booking 27" → use COMMAND:CANCEL:27',
+    '- User says "show slots" / "slots irukka?" → use COMMAND:SHOW_SLOTS',
+    '- User says "my bookings" / "booking dikhao" → use COMMAND:SHOW_BOOKINGS',
+    '- User says "my profile" → use COMMAND:GET_PROFILE',
+    '- User says "book bike slot" → use COMMAND:AUTO_BOOK:BIKE:0:2',
+    '- User says "book truck slot" → use COMMAND:AUTO_BOOK:TRUCK:0:2',
+    '',
+    'STYLE: Be short, friendly, use emojis. Confirm what you are doing in 1-2 sentences.',
+    'NEVER say you cannot do something. ALWAYS trigger the right COMMAND.',
+    'Put COMMAND: on its own line at the very end of your response.'
+  ].join('\n');
+}
+
+/* ── main send ── */
+window.aiSend=async function(){
+  var inp=document.getElementById('ai-i');
+  var msg=inp.value.trim();
+  if(!msg||ai.busy)return;
+  inp.value='';window.aiTgl();
+  if(ai.n===0)document.getElementById('ai-qs').style.display='none';
+  ai.n++;
+  aiUser(msg);
+  ai.busy=true;
+  aiLoading();
+
+  await refreshData();
+  ai.hist.push({role:'user',content:msg});
+  if(ai.hist.length>18)ai.hist=ai.hist.slice(-18);
+
+  try{
+    var res=await fetch(GU,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GK},
+      body:JSON.stringify({
+        model:GM,max_tokens:700,temperature:0.6,
+        messages:[{role:'system',content:buildSys()}].concat(ai.hist)
+      })
+    });
+    var d=await res.json();
+    if(!res.ok){
+      aiRmLoad();
+      aiBot('⚠️ '+(d.error&&d.error.message?d.error.message:'AI error. Try again.'));
+      ai.busy=false;return;
+    }
+    var full=d.choices&&d.choices[0]?d.choices[0].message.content:'No response.';
+    ai.hist.push({role:'assistant',content:full});
+
+    // Extract COMMAND
+    var cmdRe=/COMMAND:([^\n\r]+)/;
+    var cmdMatch=cmdRe.exec(full);
+    var display=full.replace(/COMMAND:[^\n\r]+/g,'').trim();
+    display=fmt(display);
+
+    aiRmLoad();
+    if(display)aiBot(display);
+
+    // Execute command and show result
+    if(cmdMatch){
+      var cmdStr=cmdMatch[1].trim();
+      var result=await execCmd(cmdStr);
+      if(result)aiBot(result);
+    }
+
+  }catch(e){
+    aiRmLoad();
+    aiBot('❌ Connection error. Is your backend running?');
+  }
+  ai.busy=false;
+};
+
+aiReset();
+})();
+</script>
+
 </body>
 </html>
