@@ -2,7 +2,6 @@ package com.parkease.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,24 +15,21 @@ import com.parkease.models.ParkingSlot;
 import com.parkease.service.ParkingAreaService;
 
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/parking-areas")
 @RequiredArgsConstructor
+@Tag(name = "🏢 Parking Areas", description = "Parking area/lot management")
 public class ParkingAreaController {
-
 
     private final ParkingAreaService parkingAreaService;
 
     @PostMapping
     public ResponseEntity<String> createParkingArea(
-            @RequestBody ParkingAreaRequestDTO dto, Authentication authentication) {
+            @RequestBody ParkingAreaRequestDTO dto) {
 
-        ParkingArea area = parkingAreaService.createParkingArea(dto, authentication.getName());
-        return ResponseEntity.ok("Lot " + area.getLotName() + "added successfully with " + area.getTotalSlots() + " parking slots");
+        ParkingArea area = parkingAreaService.createParkingArea(dto);
+        return ResponseEntity.ok("Lot " + area.getLotName() + " added successfully with " + area.getTotalSlots() + " parking slots");
     } 
-    
-  
-    
-    
 }

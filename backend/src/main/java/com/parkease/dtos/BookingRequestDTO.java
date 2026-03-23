@@ -5,10 +5,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class BookingRequestDTO {
-
     private Long slotId;
-
     private LocalDateTime startTime;
-
     private LocalDateTime endTime;
 }

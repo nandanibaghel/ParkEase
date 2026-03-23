@@ -1,5 +1,7 @@
 package com.parkease.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,7 +18,7 @@ public class ParkingSlot {
     private String slotNumber;
 
     @Enumerated(EnumType.STRING)
-    private VehicleType vehicleType; // CAR, BIKE
+    private VehicleType vehicleType;
 
     @Column(nullable = false)
     private Double pricePerHour;
@@ -25,5 +27,6 @@ public class ParkingSlot {
 
     @ManyToOne
     @JoinColumn(name = "parking_area_id", nullable = false)
+    @JsonBackReference  // ← This fixes the circular reference
     private ParkingArea parkingArea;
 }

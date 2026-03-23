@@ -1,32 +1,18 @@
 package com.parkease.dtos;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
-
 @Data
-
 public class AuthResponseDTO {
     private String token;
     private String message;
+    private String role;
+    private String fullName;
+    private String email;
 
-    public AuthResponseDTO(String token, String message) {
-        this.message = message;
+    public AuthResponseDTO(String token, String message, String role, String fullName, String email) {
         this.token = token;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
         this.message = message;
+        this.role = role;
+        this.fullName = fullName;
+        this.email = email;
     }
 }

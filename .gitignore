@@ -1,1 +1,4 @@
 /.metadata/
+/backend/target/
+*.class
+*.log
