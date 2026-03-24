@@ -322,14 +322,4 @@ We welcome contributions! Please follow these steps:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Contact
-
-For questions or support, please contact the development team:
-
-- Nandani Baghel - [nandani@example.com](mailto:nandani@example.com)
-- Priyanka Murlidharan - [priyanka@example.com](mailto:priyanka@example.com)
-- Akshaya V - [akshaya@example.com](mailto:akshaya@example.com)
-
----
-
 ⭐ **Star this repo** if you find it helpful!
