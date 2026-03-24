@@ -17,6 +17,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AIController {
 
+    // 🔑 Paste your Anthropic API key here
     private static final String ANTHROPIC_API_KEY = "your-api-key-here";
     private static final String ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
     private static final String MODEL = "claude-sonnet-4-20250514";
@@ -30,12 +31,14 @@ public class AIController {
             @SuppressWarnings("unchecked")
             List<Map<String, String>> history = (List<Map<String, String>>) body.getOrDefault("history", new ArrayList<>());
 
+            // Build messages array
             List<Map<String, String>> messages = new ArrayList<>(history);
             Map<String, String> userMsg = new HashMap<>();
             userMsg.put("role", "user");
             userMsg.put("content", message);
             messages.add(userMsg);
 
+            // Build request body
             Map<String, Object> requestBody = new LinkedHashMap<>();
             requestBody.put("model", MODEL);
             requestBody.put("max_tokens", 1024);
@@ -45,6 +48,7 @@ public class AIController {
             ObjectMapper mapper = new ObjectMapper();
             String jsonBody = mapper.writeValueAsString(requestBody);
 
+            // Call Anthropic API
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(ANTHROPIC_URL))
